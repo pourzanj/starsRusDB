@@ -1,3 +1,5 @@
+package StarsRusMarket;
+
 import java.io.*;
 
 /** 
@@ -37,7 +39,8 @@ public class StarsRusMarket
             break;
          case "register":
             System.out.println("Starting Registration Process...");
-            //ADD HERE. IMPLEMENT REGISTRATION HANDLER
+            RegistrationHandler R = new RegistrationHandler(args[1], args[2]);
+            System.out.println("Registration Complete! You can now sign in.");            
          default:
             try{ wrongLoginMode(); }
             catch( LoginModeException lme ){
@@ -46,7 +49,6 @@ public class StarsRusMarket
             break;
       }
 
-      //check if login was successful
    }
 
    /**
@@ -66,20 +68,5 @@ public class StarsRusMarket
    private static void wrongLoginMode() throws LoginModeException
    {
       throw new LoginModeException();
-   }
-}
-
-
-class ArgLengthException extends Exception
-{
-   public ArgLengthException(){
-      super();
-   }
-}
-
-class LoginModeException extends Exception
-{
-   public LoginModeException(){
-      super();
    }
 }

@@ -1,3 +1,4 @@
+package StarsRusMarket;
 /**
  * Class for assisting StarsRusMarket program with with login
  * 
@@ -5,63 +6,48 @@
  */
 public class LoginHandler
 { 
-	private boolean loginSuccessful;
-
-	/**
-	* Public method intended for StarsRusMarket to check if login was successful
-	*/
-	public boolean isLoginSuccessful()
-	{
-		if(loginSuccessful == true) return true;
-		else return false;
-	}
-
     /**
      * Constructor
      *
      * @param inputMode the mode of the program user (either user, manager, or admin)
+     * @param enteredUsername username that the user type in at the command line
+     * @param enteredPassword password user typed in at command line
      */
     public LoginHandler(String inputMode,String enteredUsername, String enteredPassword)
     {
+    	String correctUserPass = "";
+
     	//LOGIN AS USER
         if(inputMode == "user"){
 
         	//check that the username exists and if so get its associated password
-        	String correctUserPass = "";
         	try{
         		correctUserPass = pullPassword("enteredUsername");
         	}
         	catch (InvalidUsernameException iue){
-        		System.out.println("Username does not exist. Quiting Program...");
+        		System.out.println(iue.getError() + "Quiting Program...");
         	}
-
-        	//check if the password is the correct match for the username
-        	try{
-        		checkPassword(correctUserPass, enteredPassword);
-        	}
-        	catch (WrongPasswordException wpe){
-         		System.out.println("Incorrect Password. Quiting Program...");
-        	}
-
-        	//if we've made it this far the login is successful
-        	loginSuccessful = true;
         }
 
         //LOGIN AS MANAGER
         else if(inputMode == "manager"){
-        	if( enteredPassword.equals("egg") )
-        		loginSuccessful = true;
-        	else
-        		loginSuccessful = false;
+        	correctUserPass = "egg";
         }
 
         //LOGIN AS ADMIN
         else{
-        	if( enteredPassword.equals("egg") )
-        		loginSuccessful = true;
-        	else
-        		loginSuccessful = false;
+        	correctUserPass = "chicken";
         }
+
+        //check if the password is the correct match for the login mode and person
+        try{
+        	checkPassword(correctUserPass, enteredPassword);
+        }
+        catch (WrongPasswordException wpe){
+         	System.out.println("Incorrect Password. Quiting Program...");
+        }
+
+        //if we've made it this far the login is successful
     }
     
     /**
@@ -78,7 +64,7 @@ public class LoginHandler
     	if( queryResult IS NOT NULL )
     		return queryResult;
     	else
-    		throw new InvalidUsernameException;
+    		throw new InvalidUsernameException("Username Does Not Exists.");
     	*/
  		
     	return "fortyTWO";
@@ -97,18 +83,4 @@ public class LoginHandler
     	else
     		throw new WrongPasswordException();
     }
-}
-
-class InvalidUsernameException extends Exception
-{
-   public InvalidUsernameException(){
-      super();
-   }
-}
-
-class WrongPasswordException extends Exception
-{
-   public WrongPasswordException(){
-      super();
-   }
 }
