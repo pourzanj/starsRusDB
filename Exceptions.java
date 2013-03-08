@@ -1,4 +1,4 @@
-package StarsRusMarket;
+
 
 class ArgLengthException extends Exception
 {
@@ -34,4 +34,34 @@ class WrongPasswordException extends Exception
    public WrongPasswordException(){
       super();
    }
+}
+
+//USER INTERFACE EXCEPTIONS
+
+class NegativeNumberException extends Exception
+{
+	public NegativeNumberException(){
+		super();
+	}
+}
+
+class InvalidStockException extends Exception
+{
+	public InvalidStockException(){
+		super();
+	}
+}
+
+class InvalidMovieException extends Exception
+{
+	public InvalidMovieException(){
+		super();
+	}
+}
+
+class InvalidAcctNumber extends Exception
+{
+	public InvalidAcctNumber(){
+		super();
+	}
 }

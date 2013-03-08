@@ -1,4 +1,3 @@
-package StarsRusMarket;
 
 import java.io.*;
 
@@ -28,14 +27,17 @@ public class StarsRusMarket
          case "user":
             System.out.println("Attempting Login as User...");
             L = new LoginHandler("user", args[1], args[2]);
+            UserInterfaceHandler U = new UserInterfaceHandler();
             break;
          case "manager":
             System.out.println("Attempting Login as Manager...");
             L = new LoginHandler("manager", "NA", args[2]);
+            ManagerInterfaceHandler M = new ManagerInterfaceHandler();
             break;
          case "admin":
             System.out.println("Attempting Login as Adminstrator...");
             L = new LoginHandler("admin", "NA", args[2]);
+            AdminInterfaceHandler A = new AdminInterfaceHandler();
             break;
          case "register":
             System.out.println("Starting Registration Process...");

@@ -1,4 +1,4 @@
-package StarsRusMarket;
+
 /**
  * Class for assisting StarsRusMarket program with with registration
  * 

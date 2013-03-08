@@ -1,19 +1,17 @@
-package StarsRusMarket;
+
 
 interface transactionHandler
 {
-	void deposit(int acctIDnum, double amount);
-	void withdraw(int acctIDnum, double amount);
+	void depositOrWithdraw(String action);
 	
-	void buy(int acctIDnum, String symbol, int amount);
-	void sell(int acctIDnum, String symbol, int amount, double price);
+	void buyOrSell(String action);
 
-	void showBalance(int acctIDnum);
-	void showTransactions(int acctIDnum);
+	void showBalance();
+	void showTransactions();
 
-	void showPriceAndActorProfile(String symbol);
+	void showPriceAndActorProfile();
 
-	void showMovieInfo(String movie);
+	void showMovieInfo();
 	
-	void showTopMovies(int startYear, int endYear);
+	void showTopMovies();
 }
