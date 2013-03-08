@@ -10,9 +10,26 @@ import java.sql.*;
 public class UserInterfaceHandler implements transactionHandler
 {
 	private int acctIDnum;
+	private ConnectionHandler myC;
 
-	public UserInterfaceHandler(ConnectionHandler C)
+	public UserInterfaceHandler(String username, ConnectionHandler C)
 	{
+
+		myC = C;
+
+		//get acctIDnum
+		String queryResult = "select * from screenname S, customerProfile C where username = '" + username + "'" +
+			" AND S.taxid = C.taxid";
+
+		try{
+			Statement stmt = myC.getConnection().createStatement();
+			ResultSet rs = stmt.executeQuery(queryResult);
+			rs.next();
+	    	acctIDnum = rs.getInt("taxid");
+	    } catch (Exception e) {
+	    	System.out.println("Error retrieving acccount ID in user interface handler. Exiting");
+	    	System.exit(0);
+	    }
 
 		System.out.println("Welcome to the StarsRus Market!");
 
@@ -116,13 +133,49 @@ public class UserInterfaceHandler implements transactionHandler
 			System.exit(0);
 	    }
 
-	    //~~INSERT INTO DB HERE 
-	    //MAKE SURE IF WITHDRAW THAT CHECK THERE IS ENOUGH IN THE ACCOUNT TO WITHDRAW MY SPECIFIED AMOUNT
-	    
 	    if(action.equals("deposit"))
-	    	System.out.println("Deposited " + amount + " dollars.");
+	    {
+	    	String update = "update customerProfile SET acctbalance = acctbalance + " + amount + " WHERE taxid=" + acctIDnum;
+	    	try{
+		    	Statement stmt = myC.getConnection().createStatement();
+				int ex = stmt.executeUpdate(update);
+			} catch (Exception e){
+				System.out.println("Error depositing to database. Exiting.");
+				System.exit(0);
+			}
+			System.out.println("Deposited " + amount + " dollars.");
+	    }
 	    else
-	    	System.out.println("Withdrew " + amount + " dollars.");
+	    {
+	    	//first check if there's enough to withdraw
+	    	String queryResult = "select * from customerProfile where taxid = " + acctIDnum;
+
+	    	double currentBalance = 0;
+	    	try{
+				Statement stmt = myC.getConnection().createStatement();
+				ResultSet rs = stmt.executeQuery(queryResult);
+				rs.next();
+				currentBalance = rs.getDouble("acctbalance");
+			} catch(Exception e){
+				System.out.println("Error checking account balance. Exiting.");
+				System.exit(0);
+			}
+
+	    	if(currentBalance < amount)
+	    		System.out.println("Sorry, you do not have that much cash available.");
+	    	else {
+	    		String update = "update customerProfile SET acctbalance = acctbalance - " + amount + " WHERE taxid=" + acctIDnum;
+		    	try{
+			    	Statement stmt = myC.getConnection().createStatement();
+					int ex = stmt.executeUpdate(update);
+				} catch (Exception e){
+					System.out.println("Error depositing to database. Exiting.");
+					System.exit(0);
+				}
+				System.out.println("Deposited " + amount + " dollars.");
+	    		System.out.println("Withdrew " + amount + " dollars.");
+	    	}
+	    }    
 	}
 
 	public void buyOrSell(String action)

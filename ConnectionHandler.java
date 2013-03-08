@@ -18,13 +18,9 @@ public class ConnectionHandler {
 		String strUsername = "cs174a_arya";
 		String strPassword = "4012720";
 		System.out.println("Connecting...");
-		//try {
-			conn = DriverManager.getConnection(strConn,strUsername,strPassword);
-		//}
-		/*catch (SQLException e) {
-			System.out.println("Failed to connect to the database.");
-			System.exit(1);
-		}*/
+
+		conn = DriverManager.getConnection(strConn,strUsername,strPassword);
+
 		System.out.println("Connected!");
 	}
 	public Connection getConnection() {

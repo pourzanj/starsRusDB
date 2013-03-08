@@ -18,7 +18,7 @@ public class LoginHandler
 
     public LoginHandler(String inputMode,String enteredUsername, String enteredPassword, ConnectionHandler C) throws SQLException
     {
-	myC = C;
+		myC = C;
     	String correctUserPass = "";
 
     	//LOGIN AS USER
@@ -30,6 +30,7 @@ public class LoginHandler
         	}
         	catch (InvalidUsernameException iue){
         		System.out.println(iue.getError() + "Quiting Program...");
+        		System.exit(1);
         	}
         }
 
@@ -47,7 +48,8 @@ public class LoginHandler
         	checkPassword(correctUserPass, enteredPassword);
         }
         catch (WrongPasswordException wpe){
-         	System.out.println("Incorrect Password. Quiting Program...");
+         	System.out.println("Incorrect Password. Quitting Program...");
+         	System.exit(1);
         }
 
         //if we've made it this far the login is successful
@@ -61,13 +63,13 @@ public class LoginHandler
     */
     private String pullPassword(String username) throws InvalidUsernameException, SQLException
     {
-    	//~~QUERY DATABASE HERE
+    	//Query database
     	String queryResult = "select * from screenname where username = '" + username + "'";
-	Statement stmt = null;
-	ResultSet rs = null;
-	stmt = myC.getConnection().createStatement();
-	rs = stmt.executeQuery(queryResult);
-	String pulledPassword = null;
+
+		Statement stmt = myC.getConnection().createStatement();
+		ResultSet rs = stmt.executeQuery(queryResult);
+		
+		String pulledPassword = null;
     	while (rs.next())
     		pulledPassword = (rs.getString("password")).replaceAll("\\s","");
     	return pulledPassword;

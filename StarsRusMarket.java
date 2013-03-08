@@ -19,6 +19,7 @@ public class StarsRusMarket
       }
       catch (ArgLengthException ale){
          System.out.println("Usage is StarsRusMarket MODE USERNAME PASSWORD");
+         System.exit(1);
       }
 
       //attempt login based on mode
@@ -36,7 +37,7 @@ public class StarsRusMarket
          case "user":
             System.out.println("Attempting Login as User...");
             L = new LoginHandler("user", args[1], args[2],C);
-            UserInterfaceHandler U = new UserInterfaceHandler(C);
+            UserInterfaceHandler U = new UserInterfaceHandler(args[1], C);
             break;
          case "manager":
             System.out.println("Attempting Login as Manager...");
