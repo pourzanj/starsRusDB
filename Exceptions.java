@@ -65,3 +65,10 @@ class InvalidAcctNumber extends Exception
 		super();
 	}
 }
+
+class QuantityTooLowException extends Exception
+{
+	public QuantityTooLowException(){
+		super();
+	}
+}

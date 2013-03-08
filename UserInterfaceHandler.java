@@ -12,6 +12,112 @@ public class UserInterfaceHandler implements transactionHandler
 	private int acctIDnum;
 	private ConnectionHandler myC;
 
+	private String getTodaysDate()
+	{	
+		String line = "";
+		try{
+			BufferedReader br = new BufferedReader(new FileReader("CurrentDate.txt"));
+			line = br.readLine();
+			br.close();
+		} catch (Exception e) {
+			System.out.println("Error retrieving today's date. Exiting");
+	    	System.exit(0);
+		}
+		return line;
+	}
+
+	private double getCurrentPrice(String sym)
+	{
+		double currentprice = -1;
+		String currentPriceQuery = "select currentprice from actorStock where symbol = '" + sym + "'";
+		try{
+			Statement stmt = myC.getConnection().createStatement();
+			ResultSet currPriceRS = stmt.executeQuery(currentPriceQuery);
+			currPriceRS.next();
+			currentprice =currPriceRS.getDouble("currentprice");
+		} catch(Exception e){
+			System.out.println("Error getting current stock price. Exiting.");
+			System.exit(0);
+		}
+
+		return currentprice;
+	}
+
+	private double getCurrentBalance()
+	{
+		String balanceQuery = "select * from customerProfile where taxid = " + acctIDnum;
+
+		double currentBalance = 0;
+	    try{
+			Statement stmt = myC.getConnection().createStatement();
+			ResultSet balanceRS = stmt.executeQuery(balanceQuery);
+			balanceRS.next();
+			currentBalance = balanceRS.getDouble("acctbalance");
+		} catch(Exception e){
+			System.out.println("Error checking account balance. Exiting.");
+			System.exit(0);
+		}
+
+		return currentBalance;
+	}
+
+	private int getTransactionNumber()
+	{
+		int tID = -1;
+	    String queryResult = "select * from transactions";
+
+	    ResultSet rsTnum = null;
+		   try{
+			Statement stmt = myC.getConnection().createStatement();
+			rsTnum = stmt.executeQuery(queryResult);
+		} catch(Exception e){
+			System.out.println("Error getting new transactionid. Exiting.");
+			System.exit(0);
+		}
+
+		//check if this is the first transaction of the month or not and set appropriate tID
+		boolean noTransactionsThisMonth = true;
+		try {
+			while(rsTnum.next()) noTransactionsThisMonth = false; //if we go through this once then the query is NOT empty
+		} catch (SQLException sqle) {
+			System.out.println("Error getting new transactionID. Exiting.");
+			System.exit(0);
+		}
+
+		if(noTransactionsThisMonth == true) tID = 1; //if so transaction ID is 1
+		else{//else find highest transaction that occurred
+			String lastTranNum = "select max(transactionID) from transactions";
+			Statement stmt = null;
+			ResultSet lastTidRS = null;
+			try{
+				stmt = myC.getConnection().createStatement();
+			} catch(Exception e){
+				System.out.println("Error getting new transactionID. Exiting.");
+				System.exit(0);
+			}
+			try{
+				lastTidRS = stmt.executeQuery(lastTranNum);
+			} catch(Exception e){
+				System.out.println("Error getting new transactionID. Exiting.");
+				System.exit(0);
+			}
+			try{
+				lastTidRS.next();
+			} catch(Exception e){
+				System.out.println("Error getting new transactionID. Exiting.");
+				System.exit(0);
+			}
+			try{
+				tID = lastTidRS.getInt("transactionID") + 1;
+			} catch(Exception e){
+				System.out.println("Error getting new transactionID. Exiting.");
+				System.exit(0);
+			}
+		}
+
+		return tID;
+	}
+
 	public UserInterfaceHandler(String username, ConnectionHandler C)
 	{
 
@@ -172,7 +278,6 @@ public class UserInterfaceHandler implements transactionHandler
 					System.out.println("Error depositing to database. Exiting.");
 					System.exit(0);
 				}
-				System.out.println("Deposited " + amount + " dollars.");
 	    		System.out.println("Withdrew " + amount + " dollars.");
 	    	}
 	    }    
@@ -192,7 +297,32 @@ public class UserInterfaceHandler implements transactionHandler
 		}
 		String stockSymbol = commandArg;
 
-		//~~CHECK IF SYMBOL EXISTS IN DATABASE HERE THROW INVALIDSTOCK EXCEPTION IF IT DOESNT
+		//Check if symbol exists
+		String queryResult = "select * from actorStock where symbol = '" + stockSymbol + "'";
+
+		ResultSet rs = null;
+	    try{
+			Statement stmt = myC.getConnection().createStatement();
+			rs = stmt.executeQuery(queryResult);
+		} catch(Exception e){
+			System.out.println("Error looking up stock symbol. Exiting.");
+			System.exit(0);
+		}
+
+		boolean empty = true;
+		try{
+			try {
+				while(rs.next()) empty = false; //if we go through this once then the query is NOT empty
+			}
+			catch(SQLException sqle){
+				System.out.println("Error looking up stock symbol. Exiting.");
+				System.exit(0);
+			}
+			if(empty == true) throw new InvalidStockException();
+		} catch (InvalidStockException ISE) {
+			System.out.println("The stock you selected does not exist. Exiting.");
+			System.exit(0);
+		}
 
 		System.out.println("Please enter the amount you would like to buy or sell.");
 		try {
@@ -245,16 +375,142 @@ public class UserInterfaceHandler implements transactionHandler
 
 	    //~~EXECUTE TRADE in DATABASE
 	    //MAKE SURE USER HAS ENOUGH MONEY TO EXECUTE THE TRADE
+	    if(action.equals("sell"))
+	    {
+	    	//(1)create transaction in database
+	    	//make sure user has enough of the stock to sell how much he wants to
+	    	String qtyQuery = "select * from stockaccount where symbol = '" + stockSymbol + "'" +
+	    		" AND taxid = " + acctIDnum;
+	    	int totalquantityAvailable = -1;
+		    try{
+				Statement stmt = myC.getConnection().createStatement();
+				ResultSet rsTotQtyAvailRS = stmt.executeQuery(qtyQuery);
+				rsTotQtyAvailRS.next();
+				totalquantityAvailable = rsTotQtyAvailRS.getInt("totalquantity");
+			} catch(Exception e){
+				System.out.println("Error checking available quantity. Exiting.");
+				System.exit(0);
+			}
+			try{
+				if(totalquantityAvailable < amount) throw new QuantityTooLowException();
+			} catch (QuantityTooLowException qtle){
+				System.out.println("You do not have enough of this stock to sell the desired amount. Exiting.");
+				System.exit(0);
+			}
 
-	   	if(action.equals("buy"))
-	    	System.out.println("Bought " + amount + " of " + stockSymbol);
-	    else
+	    	//get transaction number
+	    	int tID = getTransactionNumber();
+
+			//get date
+			String todaysDate = getTodaysDate();
+
+			//get current price
+			double currentprice = getCurrentPrice( stockSymbol );
+
+			//insert transaction
+	    	String insertTransUpdate = "insert into transactions values(" + tID + "," + amount + ",'" +
+	    		todaysDate + "'," + "'s'" + "," + currentprice + "," + boughtAmount + "," + acctIDnum + ",'" + stockSymbol + "')";
+	    	try{
+		    	Statement stmt = myC.getConnection().createStatement();
+				int ex = stmt.executeUpdate(insertTransUpdate);
+			} catch (Exception e){
+				System.out.println("Error inserting new transaction in database. Exiting.");
+				System.exit(0);
+			}
+			
+			//(2)update balance
+			String acctBalanceUpdate = "update customerProfile SET acctbalance = acctbalance + " + (amount*currentprice) +
+				" WHERE taxid=" + acctIDnum;
+			try{
+		    	Statement stmt = myC.getConnection().createStatement();
+				int ex = stmt.executeUpdate(acctBalanceUpdate);
+			} catch (Exception e){
+				System.out.println("Error updating balance. Exiting.");
+				System.exit(0);
+			}
+
+			//(3)update stock account
+			String stockAcctUpdate = "update stockAccount SET totalquantity = totalquantity - " + amount +
+				" WHERE taxid=" + acctIDnum + " AND symbol = '" + stockSymbol + "'";
+			try{
+		    	Statement stmt = myC.getConnection().createStatement();
+				int ex = stmt.executeUpdate(stockAcctUpdate);
+			} catch (Exception e){
+				System.out.println("Error updating stock account. Exiting.");
+				System.exit(0);
+			}
+			System.out.println("Bought " + amount + " of " + stockSymbol);
+	    }
+	    else //BUY
+	    {
+	    	//first check if there's enough to withdraw
+	    	double currentBalance = getCurrentBalance();
+	    	double currentPrice = getCurrentPrice(stockSymbol);
+
+	    	if(currentBalance < (amount*currentPrice))
+	    		System.out.println("Sorry, you do not have enough cash available for this trade.");
+	    	else {
+	    		//withdraw cash
+	    		String update = "update customerProfile SET acctbalance = acctbalance - " + (amount*currentPrice) + " WHERE taxid=" + acctIDnum;
+		    	try{
+			    	Statement stmt = myC.getConnection().createStatement();
+					int ex = stmt.executeUpdate(update);
+				} catch (Exception e){
+					System.out.println("Error taking cash out of account for trade. Exiting.");
+					System.exit(0);
+				}
+
+				//get transaction number
+	    		int tID = getTransactionNumber();
+
+	    		//get date
+				String todaysDate = getTodaysDate();
+
+				//get current price
+				double currentprice = getCurrentPrice( stockSymbol );
+
+				//insert transaction
+				String insertTransUpdate = "insert into transactions values(" + tID + "," + amount + ",'" +
+		    		todaysDate + "'," + "'s'" + "," + currentprice + "," + boughtAmount + "," + acctIDnum + ",'" + stockSymbol + "')";
+		    	try{
+			    	Statement stmt = myC.getConnection().createStatement();
+					int ex = stmt.executeUpdate(insertTransUpdate);
+				} catch (Exception e){
+					System.out.println("Error inserting new transaction in database. Exiting.");
+					System.exit(0);
+				}
+
+				//update stock account
+				String stockAcctUpdate = "update stockAccount SET totalquantity = totalquantity - " + amount +
+					" WHERE taxid=" + acctIDnum + " AND symbol = '" + stockSymbol + "'";
+				try{
+			    	Statement stmt = myC.getConnection().createStatement();
+					int ex = stmt.executeUpdate(stockAcctUpdate);
+				} catch (Exception e){
+					System.out.println("Error updating stock account. Exiting.");
+					System.exit(0);
+				}
+
+	    		System.out.println("Withdrew " + amount + " dollars.");
+	    	}
+	    	
 	    	System.out.println("Sold " + amount + " of " + stockSymbol);
+	    }
+	    	
 	}
 
 	public void showBalance()
 	{
-		//~~EXECUTE QUERY TO SHOW BALANCE
+		try {
+			Statement st = myC.getConnection().createStatement();
+			ResultSet rs = st.executeQuery("select * from customerProfile where taxid = '" + acctIDnum + "'");
+			rs.next();
+			System.out.println(rs.getDouble("acctbalance"));
+		}
+		catch (SQLException e) {
+			System.out.println("Unable to show the balance. Exiting.");
+			System.exit(0);
+		}
 	}
 
 	public void showTransactions()
