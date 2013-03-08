@@ -1,3 +1,7 @@
 starRus stockmarket database project
 
 USAGE:
+
+To compile, first type in:
+export CLASSPATH=./:./ojdbc6.jar
+given that the jar file is in the same directory as the Java files.

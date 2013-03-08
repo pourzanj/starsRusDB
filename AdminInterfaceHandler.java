@@ -1,4 +1,5 @@
 import java.io.*;
+import java.sql.*;
 
 /**
  * Class for assisting StarsRusMarket program
@@ -6,10 +7,12 @@ import java.io.*;
  * 
  * @author Arya Pourzanjani & Justin Phang  
  */
+
 public class AdminInterfaceHandler
 {
-	public AdminInterfaceHandler()
+	public AdminInterfaceHandler(ConnectionHandler C)
 	{
+
 		System.out.println("Welcome Admin!");
 
 		//Allow user to continually execute desired actions

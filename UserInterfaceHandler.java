@@ -1,4 +1,5 @@
 import java.io.*;
+import java.sql.*;
 
 /**
  * Class for assisting StarsRusMarket program
@@ -10,8 +11,9 @@ public class UserInterfaceHandler implements transactionHandler
 {
 	private int acctIDnum;
 
-	public UserInterfaceHandler()
+	public UserInterfaceHandler(ConnectionHandler C)
 	{
+
 		System.out.println("Welcome to the StarsRus Market!");
 
 		//Allow user to continually execute desired actions

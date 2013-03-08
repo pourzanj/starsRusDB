@@ -12,7 +12,7 @@ public class RegistrationHandler
     * @param enteredUsername username that the user type in at the command line
     * @param enteredPassword password user typed in at command line
     */
-    public RegistrationHandler(String enteredUsername, String enteredPassword)
+    public RegistrationHandler(String enteredUsername, String enteredPassword, ConnectionHandler C)
     {
     	//make sure username does not already exists
     	try{

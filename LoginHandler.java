@@ -1,4 +1,5 @@
-
+import java.io.*;
+import java.sql.*;
 /**
  * Class for assisting StarsRusMarket program with with login
  * 
@@ -6,6 +7,7 @@
  */
 public class LoginHandler
 { 
+     private ConnectionHandler myC;
     /**
      * Constructor
      *
@@ -13,8 +15,10 @@ public class LoginHandler
      * @param enteredUsername username that the user type in at the command line
      * @param enteredPassword password user typed in at command line
      */
-    public LoginHandler(String inputMode,String enteredUsername, String enteredPassword)
+
+    public LoginHandler(String inputMode,String enteredUsername, String enteredPassword, ConnectionHandler C) throws SQLException
     {
+	myC = C;
     	String correctUserPass = "";
 
     	//LOGIN AS USER
@@ -22,7 +26,7 @@ public class LoginHandler
 
         	//check that the username exists and if so get its associated password
         	try{
-        		correctUserPass = pullPassword("enteredUsername");
+        		correctUserPass = pullPassword(enteredUsername);
         	}
         	catch (InvalidUsernameException iue){
         		System.out.println(iue.getError() + "Quiting Program...");
@@ -31,14 +35,13 @@ public class LoginHandler
 
         //LOGIN AS MANAGER
         else if(inputMode == "manager"){
-        	correctUserPass = "egg";
+        	correctUserPass = "secret";
         }
 
         //LOGIN AS ADMIN
         else{
         	correctUserPass = "chicken";
         }
-
         //check if the password is the correct match for the login mode and person
         try{
         	checkPassword(correctUserPass, enteredPassword);
@@ -56,18 +59,18 @@ public class LoginHandler
     *
     * @param the username of the user
     */
-    private String pullPassword(String username) throws InvalidUsernameException
+    private String pullPassword(String username) throws InvalidUsernameException, SQLException
     {
     	//~~QUERY DATABASE HERE
-    	/*
-    	string queryResult = QUERY RESULT HERE;
-    	if( queryResult IS NOT NULL )
-    		return queryResult;
-    	else
-    		throw new InvalidUsernameException("Username Does Not Exists.");
-    	*/
- 		
-    	return "fortyTWO";
+    	String queryResult = "select * from screenname where username = '" + username + "'";
+	Statement stmt = null;
+	ResultSet rs = null;
+	stmt = myC.getConnection().createStatement();
+	rs = stmt.executeQuery(queryResult);
+	String pulledPassword = null;
+    	while (rs.next())
+    		pulledPassword = (rs.getString("password")).replaceAll("\\s","");
+    	return pulledPassword;
     }
 
     /**

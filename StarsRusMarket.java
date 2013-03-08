@@ -1,5 +1,6 @@
 
 import java.io.*;
+import java.sql.*;
 
 /** 
  *  Main interface for managers, customers,
@@ -10,7 +11,7 @@ import java.io.*;
  */
 public class StarsRusMarket
 {
-   public static void main(String[] args)
+   public static void main(String[] args) throws SQLException
    {
       //check for proper arg length in usage of program
       try{
@@ -22,26 +23,34 @@ public class StarsRusMarket
 
       //attempt login based on mode
       LoginHandler L;
+      ConnectionHandler C = null;
+      try {
+		C = new ConnectionHandler();
+      }
+      catch (SQLException e) {
+		System.out.println("Failed to connect to the database.");
+		System.exit(1);
+      }
       String loginMode = args[0];//set login mode to first command line arg
       switch( loginMode ){
          case "user":
             System.out.println("Attempting Login as User...");
-            L = new LoginHandler("user", args[1], args[2]);
-            UserInterfaceHandler U = new UserInterfaceHandler();
+            L = new LoginHandler("user", args[1], args[2],C);
+            UserInterfaceHandler U = new UserInterfaceHandler(C);
             break;
          case "manager":
             System.out.println("Attempting Login as Manager...");
-            L = new LoginHandler("manager", "NA", args[2]);
-            ManagerInterfaceHandler M = new ManagerInterfaceHandler();
+            L = new LoginHandler("manager", "NA", args[2],C);
+            ManagerInterfaceHandler M = new ManagerInterfaceHandler(C);
             break;
          case "admin":
             System.out.println("Attempting Login as Adminstrator...");
-            L = new LoginHandler("admin", "NA", args[2]);
-            AdminInterfaceHandler A = new AdminInterfaceHandler();
+            L = new LoginHandler("admin", "NA", args[2],C);
+            AdminInterfaceHandler A = new AdminInterfaceHandler(C);
             break;
          case "register":
             System.out.println("Starting Registration Process...");
-            RegistrationHandler R = new RegistrationHandler(args[1], args[2]);
+            RegistrationHandler R = new RegistrationHandler(args[1], args[2],C);
             System.out.println("Registration Complete! You can now sign in.");            
          default:
             try{ wrongLoginMode(); }

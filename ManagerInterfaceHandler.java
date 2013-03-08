@@ -1,4 +1,5 @@
 import java.io.*;
+import java.sql.*;
 
 /**
  * Class for assisting StarsRusMarket program
@@ -8,8 +9,9 @@ import java.io.*;
  */
 public class ManagerInterfaceHandler implements transactionHandler
 {
-	public ManagerInterfaceHandler()
+	public ManagerInterfaceHandler(ConnectionHandler C)
 	{
+
 		System.out.println("Welcome Manager!");
 
 		//Allow user to continually execute desired actions
