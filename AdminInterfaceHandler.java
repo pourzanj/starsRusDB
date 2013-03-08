@@ -10,8 +10,12 @@ import java.sql.*;
 
 public class AdminInterfaceHandler
 {
+	private ConnectionHandler myC;
+
 	public AdminInterfaceHandler(ConnectionHandler C)
 	{
+
+		myC = C;
 
 		System.out.println("Welcome Admin!");
 
@@ -138,7 +142,32 @@ public class AdminInterfaceHandler
 		}
 		String stockSymbol = commandArg;
 
-		//~~CHECK IF SYMBOL EXISTS IN DATABASE HERE THROW INVALIDSTOCK EXCEPTION IF IT DOESNT
+		//Check if symbol exists
+		String queryResult = "select * from actorStock where symbol = '" + stockSymbol + "'";
+
+		ResultSet rs = null;
+	    try{
+			Statement stmt = myC.getConnection().createStatement();
+			rs = stmt.executeQuery(queryResult);
+		} catch(Exception e){
+			System.out.println("Error looking up stock symbol. Exiting.");
+			System.exit(0);
+		}
+
+		boolean empty = true;
+		try{
+			try {
+				while(rs.next()) empty = false; //if we go through this once then the query is NOT empty
+			}
+			catch(SQLException sqle){
+				System.out.println("Error looking up stock symbol. Exiting.");
+				System.exit(0);
+			}
+			if(empty == true) throw new InvalidStockException();
+		} catch (InvalidStockException ISE) {
+			System.out.println("The stock you selected does not exist. Exiting.");
+			System.exit(0);
+		}
 
 		System.out.println("Enter new price.");
 
@@ -164,11 +193,41 @@ public class AdminInterfaceHandler
 			System.exit(0);
 	    }
 
-	    //~~INSERT INTO DB HERE 
+	    //update
+	    String update = "update actorStock SET currentPrice = " + amount + " WHERE symbol= '" + stockSymbol + "'";
+		try{
+			Statement stmt = myC.getConnection().createStatement();
+			int ex = stmt.executeUpdate(update);
+		} catch (Exception e){
+			System.out.println("Error changing price. Exiting.");
+			System.exit(0);
+		}
+	    System.out.println("Changed Price of " + stockSymbol + " to " + amount);
 	}
 
 	public void updateDate()
 	{
-		
+		System.out.println("Please enter the new date.");
+
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		String commandArg = null;
+		try {
+			commandArg = br.readLine();
+		} catch (IOException ioe) {
+			System.out.println("Error Reading Command. Exiting.");
+			System.exit(0);
+		}
+		String newDate = commandArg;
+		try {
+			FileWriter fs = new FileWriter("CurrentDate.txt",false);
+			BufferedWriter bw = new BufferedWriter(fs);
+			bw.write(newDate);
+			bw.close();
+		} catch (Exception e) {
+			System.out.println("Can't write to file");
+			System.exit(0);
+		}
+
+		System.out.println("Changed Date.");
 	}
 }

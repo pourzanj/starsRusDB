@@ -41,7 +41,7 @@ public class LoginHandler
 
         //LOGIN AS ADMIN
         else{
-        	correctUserPass = "chicken";
+        	correctUserPass = "secret";
         }
         //check if the password is the correct match for the login mode and person
         try{

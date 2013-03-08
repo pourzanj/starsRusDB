@@ -108,8 +108,10 @@ public class UserInterfaceHandler implements transactionHandler
 				System.exit(0);
 			}
 			try{
-				tID = lastTidRS.getInt("transactionID") + 1;
-			} catch(Exception e){
+				tID = lastTidRS.getInt("MAX(TRANSACTIONID)") + 1;
+			} catch(SQLException e){
+				System.out.println( "Error Code " + e.getErrorCode() );
+				System.out.println( "State " + e.getSQLState() );
 				System.out.println("Error getting new transactionID. Exiting.");
 				System.exit(0);
 			}
@@ -122,6 +124,23 @@ public class UserInterfaceHandler implements transactionHandler
 	{
 
 		myC = C;
+
+		//make sure market is open
+		String openline = "";
+		try{
+			BufferedReader br = new BufferedReader(new FileReader("OpenOrClosed.txt"));
+			openline = br.readLine();
+			br.close();
+		} catch (Exception e) {
+			System.out.println("Error checking market status. Exiting");
+	    	System.exit(0);
+		}
+		if(openline.equals("Closed"))
+		{
+			System.out.println("Sorry market is close, come back later. Exiting");
+	    	System.exit(0);
+		}
+
 
 		//get acctIDnum
 		String queryResult = "select * from screenname S, customerProfile C where username = '" + username + "'" +
@@ -439,7 +458,7 @@ public class UserInterfaceHandler implements transactionHandler
 				System.out.println("Error updating stock account. Exiting.");
 				System.exit(0);
 			}
-			System.out.println("Bought " + amount + " of " + stockSymbol);
+			System.out.println("Sold " + amount + " of " + stockSymbol);
 	    }
 	    else //BUY
 	    {
@@ -452,6 +471,7 @@ public class UserInterfaceHandler implements transactionHandler
 	    	else {
 	    		//withdraw cash
 	    		String update = "update customerProfile SET acctbalance = acctbalance - " + (amount*currentPrice) + " WHERE taxid=" + acctIDnum;
+		    	System.out.println("withdraw string: " + update);
 		    	try{
 			    	Statement stmt = myC.getConnection().createStatement();
 					int ex = stmt.executeUpdate(update);
@@ -471,7 +491,7 @@ public class UserInterfaceHandler implements transactionHandler
 
 				//insert transaction
 				String insertTransUpdate = "insert into transactions values(" + tID + "," + amount + ",'" +
-		    		todaysDate + "'," + "'s'" + "," + currentprice + "," + boughtAmount + "," + acctIDnum + ",'" + stockSymbol + "')";
+		    		todaysDate + "'," + "'b'" + "," + currentprice + "," + boughtAmount + "," + acctIDnum + ",'" + stockSymbol + "')";
 		    	try{
 			    	Statement stmt = myC.getConnection().createStatement();
 					int ex = stmt.executeUpdate(insertTransUpdate);
@@ -481,7 +501,7 @@ public class UserInterfaceHandler implements transactionHandler
 				}
 
 				//update stock account
-				String stockAcctUpdate = "update stockAccount SET totalquantity = totalquantity - " + amount +
+				String stockAcctUpdate = "update stockAccount SET totalquantity = totalquantity + " + amount +
 					" WHERE taxid=" + acctIDnum + " AND symbol = '" + stockSymbol + "'";
 				try{
 			    	Statement stmt = myC.getConnection().createStatement();
@@ -491,10 +511,9 @@ public class UserInterfaceHandler implements transactionHandler
 					System.exit(0);
 				}
 
-	    		System.out.println("Withdrew " + amount + " dollars.");
 	    	}
 	    	
-	    	System.out.println("Sold " + amount + " of " + stockSymbol);
+	    	System.out.println("Bought " + amount + " of " + stockSymbol);
 	    }
 	    	
 	}

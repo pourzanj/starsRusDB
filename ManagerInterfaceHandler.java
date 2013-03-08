@@ -9,8 +9,28 @@ import java.sql.*;
  */
 public class ManagerInterfaceHandler implements transactionHandler
 {
+	private ConnectionHandler myC;
+	
 	public ManagerInterfaceHandler(ConnectionHandler C)
 	{
+		myC = C;
+
+		//make sure market is open
+		String openline = "";
+		try{
+			BufferedReader br = new BufferedReader(new FileReader("OpenOrClosed.txt"));
+			openline = br.readLine();
+			br.close();
+		} catch (Exception e) {
+			System.out.println("Error checking market status. Exiting");
+	    	System.exit(0);
+		}
+		if(openline.equals("Closed"))
+		{
+			System.out.println("Sorry market is close, come back later. Exiting");
+	    	System.exit(0);
+		}
+
 		System.out.println("Welcome Manager!");
 
 		//Allow user to continually execute desired actions
