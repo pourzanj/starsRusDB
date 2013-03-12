@@ -219,6 +219,18 @@ public class UserInterfaceHandler implements transactionHandler
 	      			break;
 
 	      		case "help":
+				System.out.println("Here is a list of valid commands.");
+				System.out.println(" deposit: Deposits money to balance");
+				System.out.println(" withdraw: Withdraws money from balance");
+				System.out.println(" buy: Purchase a specified number of shares for a stock");
+				System.out.println(" sell: Sell a specified number of shares for a stock");
+				System.out.println(" balance: lists the current balance");
+				System.out.println(" transactions: Lists the transactions for a given account");
+				System.out.println(" stockinfo: Show the price and profile of a given stock symbol");
+				System.out.println(" movieinfo: Displays movie reviews");
+				System.out.println(" topmovies: Displays the 5-star movie titles given a time interval");
+				System.out.println(" quit: Exits the program");
+				System.out.println(" help: Takes you here");
 	      			break;
 
 	      		default:
@@ -520,11 +532,12 @@ public class UserInterfaceHandler implements transactionHandler
 
 	public void showBalance()
 	{
+		System.out.println("Here is the balance:\n");
 		try {
 			Statement st = myC.getConnection().createStatement();
 			ResultSet rs = st.executeQuery("select * from customerProfile where taxid = '" + acctIDnum + "'");
 			rs.next();
-			System.out.println(rs.getDouble("acctbalance"));
+			System.out.println("Current account balance: " + rs.getDouble("acctbalance"));
 		}
 		catch (SQLException e) {
 			System.out.println("Unable to show the balance. Exiting.");
@@ -534,7 +547,24 @@ public class UserInterfaceHandler implements transactionHandler
 
 	public void showTransactions()
 	{
-		//~~EXECUTE QUERY TO SHOW ALL TRANSACTIONS
+		System.out.println("Here are the transactions:\n");
+		try {
+			Statement st = myC.getConnection().createStatement();
+			ResultSet rs = st.executeQuery("select * from transactions");
+			while (rs.next()) {
+				System.out.println("Transaction info:");
+				System.out.println(" Transaction ID: " + rs.getInt(1));
+				System.out.println(" Quantity: " + rs.getInt(2));
+				System.out.println(" Date: " + rs.getString(3));
+				System.out.println(" Buy/Sell: " + rs.getString(4));
+				System.out.println(" Price: " + rs.getDouble(5));
+				System.out.println(" Tax ID: " + rs.getInt(6));
+				System.out.println(" Symbol: " + rs.getString(7));
+			}
+		} catch (SQLException e) {
+			System.out.println("Unable to list the transactions. Exiting.");
+			System.exit(0);
+		}
 	}
 
 	public void showPriceAndActorProfile()
@@ -551,7 +581,6 @@ public class UserInterfaceHandler implements transactionHandler
 		}
 		String stockSymbol = commandArg;
 
-		//~~QUERY THROW INVALID STOCK EXCEPTION IF STOCK DOESNT EVEN EXIST
 		String queryResult = "select * from actorStock where symbol = '" + stockSymbol + "'";
 		ResultSet rs = null;
 	        try{
@@ -577,7 +606,7 @@ public class UserInterfaceHandler implements transactionHandler
 			System.exit(0);
 		}
 		String query = "select * from actorStock A where symbol ='" + stockSymbol +"'";
-		try{
+		try {
 			Statement stmt = myC.getConnection().createStatement();
 			rs = stmt.executeQuery(query);
 		} catch(Exception e){
@@ -610,12 +639,53 @@ public class UserInterfaceHandler implements transactionHandler
 		try {
 			commandArg = br.readLine();
 		} catch (IOException ioe) {
-			System.out.println("Error Reading Command. Exiting.");
+			System.out.println("Error reading command. Exiting.");
 			System.exit(0);
 		}
 		String movieName = commandArg;
-
-		//~~QUERY THROW INVALID MOVIE EXCEPTION IF MOVIE DOESNT EVEN EXIST
+		boolean empty = true;
+		String queryResult = "select r_id, m_id, m_name, m_year, r_author, r_review, m_ranking from cs174a.movies, cs174a.reviews where m_id = r_mid and m_name='" + movieName + "'";
+		ResultSet rs = null;
+		try {
+			Statement stmt = myC.getConnection().createStatement();
+			rs = stmt.executeQuery(queryResult);
+		} catch (SQLException e) {
+			System.out.println("Error looking up the movie reviews. Exiting.");
+			System.exit(0);
+		}
+		try {
+			try {
+				while (rs.next()) empty = false;
+			} catch (SQLException sqle) {
+				System.out.println("Error looking up the movie reviews. Exiting.");
+			}
+			if (empty == true) throw new InvalidMovieException();
+		} catch (InvalidMovieException e) {
+			System.out.println("This movie has no reviews. Exiting.");
+			System.exit(0);
+		}
+		try {
+			Statement stmt = myC.getConnection().createStatement();
+			rs = stmt.executeQuery(queryResult);
+		} catch (Exception e) {
+			System.out.println("Error looking up the movie reviews. Exiting.");
+			System.exit(0);
+		}
+		try {
+			while (rs.next()) {
+				System.out.println("Movie review info:");
+				System.out.println(" Review ID: " + rs.getInt(1));
+				System.out.println(" Movie ID: " + rs.getInt(2));
+				System.out.println(" Movie Name: " + rs.getString(3));
+				System.out.println(" Movie Year: " + rs.getInt(4));
+				System.out.println(" Review Author: " + rs.getString(5));
+				System.out.println(" Review: " + rs.getString(6));
+				System.out.println(" Ranking: " + rs.getDouble(7));
+			}
+		} catch(Exception e) {
+			System.out.println("Error looking up the movie reviews.");
+			System.exit(0);
+		}
 	}
 	
 	public void showTopMovies()
@@ -628,35 +698,56 @@ public class UserInterfaceHandler implements transactionHandler
 		try {
 			commandArg = br.readLine();
 		} catch (IOException ioe) {
-			System.out.println("Error Reading Command. Exiting.");
+			System.out.println("Error reading command. Exiting.");
 			System.exit(0);
 		}
 
-		int amount1 = 0;
+		int startYear = 0;
 		try {
-	    	amount1 = Integer.valueOf( commandArg );
-	    } catch (NumberFormatException nfe) {
-	    	System.out.println("Entered value is not an integer. Exiting.");
+	    		startYear = Integer.valueOf( commandArg );
+	    	} catch (NumberFormatException nfe) {
+	    		System.out.println("Entered value is not an integer. Exiting.");
 			System.exit(0);
-	    }
+	    	}
 
-	    System.out.println("Please enter the ending year of the period you'd like to find top movies in.");
+	    	System.out.println("Please enter the ending year of the period you'd like to find top movies in.");
 	    
 		try {
 			commandArg = br.readLine();
 		} catch (IOException ioe) {
-			System.out.println("Error Reading Command. Exiting.");
+			System.out.println("Error reading command. Exiting.");
 			System.exit(0);
 		}
 
-	    int amount2 = 0;
+	    	int endYear = 0;
 		try {
-	    	amount2 = Integer.valueOf( commandArg );
-	    } catch (NumberFormatException nfe) {
-	    	System.out.println("Entered value is not an integer. Exiting.");
+	    		endYear = Integer.valueOf( commandArg );
+	    	} catch (NumberFormatException nfe) {
+	    		System.out.println("Entered value is not an integer. Exiting.");
 			System.exit(0);
-	    }
+	    	}
+		if (startYear > endYear) {
+			System.out.println("Error: The starting year is earlier than the ending year. Exiting.");
+			System.exit(0);
+		}
 
-		//~~QUERY
+		ResultSet rs = null;
+		String query = "select m_name from cs174a.movies where m_year >= " + startYear + " and m_year <= " + endYear + " and m_ranking = 5.0";
+		try {
+			Statement stmt = myC.getConnection().createStatement();
+			rs = stmt.executeQuery(query);
+		} catch (SQLException e) {
+			System.out.println("Error looking up the movie. Exiting.");
+			System.exit(0);
+		}
+		try {
+			while (rs.next()) {
+				System.out.println("Top movies made between " + startYear + " and " + endYear + ":");
+				System.out.println(" Movie name: " + rs.getString(1));
+			}
+		} catch (SQLException e) {
+			System.out.println("Error looking up the movie. Exiting.");
+			System.exit(0);
+		}
 	}
 }
