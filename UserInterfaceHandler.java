@@ -732,7 +732,7 @@ public class UserInterfaceHandler implements transactionHandler
 		}
 
 		ResultSet rs = null;
-		String query = "select m_name from cs174a.movies where m_year >= " + startYear + " and m_year <= " + endYear + " and m_ranking = 5.0";
+		String query = "select m_name from cs174a.movies where m_year >= " + startYear + " and m_year <= " + endYear + " and (m_ranking = 5 or m_ranking = 5.0)";
 		try {
 			Statement stmt = myC.getConnection().createStatement();
 			rs = stmt.executeQuery(query);
