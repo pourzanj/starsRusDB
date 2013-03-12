@@ -10,7 +10,35 @@ import java.sql.*;
 public class ManagerInterfaceHandler implements transactionHandler
 {
 	private ConnectionHandler myC;
-	
+
+	private String getTodaysDate()
+	{	
+		String line = "";
+		try{
+			BufferedReader br = new BufferedReader(new FileReader("CurrentDate.txt"));
+			line = br.readLine();
+			br.close();
+		} catch (Exception e) {
+			System.out.println("Error retrieving today's date. Exiting");
+	    	System.exit(0);
+		}
+		return line;
+	}
+
+	private String getLastInterestDate()
+	{	
+		String line = "";
+		try{
+			BufferedReader br = new BufferedReader(new FileReader("lastInterestDay.txt"));
+			line = br.readLine();
+			br.close();
+		} catch (Exception e) {
+			System.out.println("Error retrieving today's date. Exiting");
+	    	System.exit(0);
+		}
+		return line;
+	}
+
 	public ManagerInterfaceHandler(ConnectionHandler C)
 	{
 		myC = C;
@@ -128,8 +156,71 @@ public class ManagerInterfaceHandler implements transactionHandler
 		}
 	}	
 
+	//gets called whenever date changes
 	public void AddInterest()
 	{
+		/*
+		//get days since interest last taken 
+		String line = "";
+		try{
+			BufferedReader br = new BufferedReader(new FileReader("CurrentDate.txt"));
+			line = br.readLine();
+			br.close();
+		} catch (Exception e) {
+			System.out.println("Error retrieving today's date. Exiting");
+	    	System.exit(0);
+		}
+		int lastDay = Integer.parseInt( oldDate.substring(2,3) );
+		int today = Integer.parseInt( (getTodaysDate()).substring(2,3) );
+		int lastInterestDay = Integer.parseInt( (getLastInterestDate()).substring(2,3) );
+
+		int daysSinceInterestDay;
+		if(lastDay < lastInterestDay)
+			daysSince = (30 - lastInterestDay) + lastDay;
+		else
+			daysSince = lastDay - lastInterestDay;
+
+		//check if it's time to add interest
+		if(daysSince != 0){
+
+			//update avg balances
+			String queryAll = "select * from averagebalance";
+			ResultSet rs = null;
+		    try{
+				Statement stmt = myC.getConnection().createStatement();
+				rs = stmt.executeQuery(queryResult);
+			} catch(Exception e){
+				System.out.println("Error adding interest. Exiting.");
+				System.exit(0);
+			}
+
+			double oldAvgBalance = 0;
+			while(rs.next())
+			{
+				//iterate through results get average balance so far
+				oldAvgBalance = rs.getDouble( "avg" );
+				//update
+				double newAvgBalance = oldAvgBalance*
+				String avgBalanceUpdate = "update stockAccount SET totalquantity = totalquantity + " + amount +
+					" WHERE taxid=" + acctIDnum + " AND symbol = '" + stockSymbol + "'";
+				try{
+			    	Statement stmt = myC.getConnection().createStatement();
+					int ex = stmt.executeUpdate(avgBalanceUpdate);
+				} catch (Exception e){
+					System.out.println("Error addign interest. Exiting.");
+					System.exit(0);
+				}
+
+			}
+
+			return;
+		}
+
+		//ADD INTEREST
+		else{
+			//get current average balance
+		}
+		*/
 
 	}
 

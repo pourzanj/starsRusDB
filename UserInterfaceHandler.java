@@ -552,6 +552,53 @@ public class UserInterfaceHandler implements transactionHandler
 		String stockSymbol = commandArg;
 
 		//~~QUERY THROW INVALID STOCK EXCEPTION IF STOCK DOESNT EVEN EXIST
+		String queryResult = "select * from actorStock where symbol = '" + stockSymbol + "'";
+		ResultSet rs = null;
+	        try{
+			Statement stmt = myC.getConnection().createStatement();
+			rs = stmt.executeQuery(queryResult);
+		} catch(Exception e){
+			System.out.println("Error looking up stock symbol. Exiting.");
+			System.exit(0);
+		}
+
+		boolean empty = true;
+		try{
+			try {
+				while(rs.next()) empty = false; //if we go through this once then the query is NOT empty
+			}
+			catch(SQLException sqle){
+				System.out.println("Error looking up stock symbol. Exiting.");
+				System.exit(0);
+			}
+			if(empty == true) throw new InvalidStockException();
+		} catch (InvalidStockException ISE) {
+			System.out.println("The stock you selected does not exist. Exiting.");
+			System.exit(0);
+		}
+		String query = "select * from actorStock A where symbol ='" + stockSymbol +"'";
+		try{
+			Statement stmt = myC.getConnection().createStatement();
+			rs = stmt.executeQuery(query);
+		} catch(Exception e){
+			System.out.println("Error looking up customer profile. Exiting.");
+			System.exit(0);
+		}
+
+		try {
+			while (rs.next()) {
+				System.out.println("Actor Profile:");
+				System.out.println(" Symbol: " + rs.getString(1));
+				System.out.println(" Name: " + rs.getString(2));
+				System.out.println(" Date of birth: " + rs.getString(3));
+				System.out.println(" Current price: " + rs.getDouble(4));
+			}
+		}
+		catch (SQLException sqle) {
+			System.out.println("Error looking up customer profile. Exiting.");
+			System.exit(0);
+		}
+
 	}
 
 	public void showMovieInfo()
