@@ -22,8 +22,24 @@ public class RegistrationHandler
         	System.out.println(iue.getError() + "Quiting Program...");
     	}
 
+    	//prompt user for taxid
+    	//make sure tax id is a 4 digit integer (see other random try catch blocks in the project)
+    	//make sure it's unique by querying database
+
+    	//prompt user for name
+    	//make sure it's a string
+
+    	//tell the user they need $1000 to start the account and ask them if they have it if no exit if not continue
+
+    	//ask the user for their email address
+
+    	//ask the user for their phone number it can just be 10 digits with no parenthesis (you decide)
+
+    	//ask the user for their state
+    	//make sure it's 2 digits and is a string
+
     	//add username to database
-    	//~~INSERT IN TO DATABASE HERE	
+    	//~~INSERT IN TO CUSTOMER PROFILE TABLE AS WELL AS SCREENNAME TABLE AS WELL AS BALANCES TABLE
     }
 
     /**
