@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.Date;
 import java.sql.*;
 
 /**
@@ -207,27 +208,126 @@ public class AdminInterfaceHandler
 
 	public void updateDate()
 	{
-		System.out.println("Please enter the new date.");
+		System.out.println("Please enter the new date DD-MON-YY, where MON is the first 3 letters of the month.");
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		String commandArg = null;
+		String newDateS = null;
 		try {
-			commandArg = br.readLine();
+			newDateS = br.readLine();
 		} catch (IOException ioe) {
 			System.out.println("Error Reading Command. Exiting.");
 			System.exit(0);
 		}
-		String newDate = commandArg;
+
+		Date newDate = new Date(newDateS);
+		System.out.println(newDate.toString());
+
+		/*
+		//make sure day and month is an integer and not negative
+		int dateInt = 0;
 		try {
-			FileWriter fs = new FileWriter("CurrentDate.txt",false);
-			BufferedWriter bw = new BufferedWriter(fs);
-			bw.write(newDate);
-			bw.close();
-		} catch (Exception e) {
-			System.out.println("Can't write to file");
+	    	amount = Integer.valueOf( commandArg );
+	    } catch (NumberFormatException nfe) {
+	    	System.out.println("Entered value is not an integer. Exiting.");
+			System.exit(0);
+	    }
+
+	    try {
+	    	if( amount <= 0 ) throw new NegativeNumberException();
+	    } catch (NegativeNumberException nne) {
+	    	System.out.println("Dates must be positive integers. Exiting.");
+			System.exit(0);
+	    }
+
+	    try {
+	    	if( newDate.length() != 6 ) throw new Exception();
+	    } catch (NegativeNumberException nne) {
+	    	System.out.println("Dates must be in 6 digit format. Exiting.");
+			System.exit(0);
+	    }
+
+	    //extract date from string to test for correctness 
+	    int year, month, day;
+
+	    //add 100 to year because it's date minus 1900
+	    //year = 100 + 10*Integer.valueOf(newDate[4]) + Integer.valueOf(newDate[5]);
+	    month = 10*Integer.valueOf(newDate[0]) + Integer.valueOf(newDate[1]);
+	    day = 10*Integer.valueOf(newDate[2]) + Integer.valueOf(newDate[3]);
+
+	    //check bounds of day and month
+	    try {
+	    	if( month < 1 || month > 12 ) throw new Exception;
+	    	if( day < 1 || day > 31) throw new Exception;
+	    } catch (Exception d) {
+	    	System.out.println("Your date is not in the bounds of a normal date. Exiting.");
+			System.exit(0);
+	    }
+	    */
+
+	   	//get the last date where anything happened
+	    String query_lastDate = "select max(bdate) from balances";
+
+	    Date lastUpdateDate = null;
+	    try{
+			Statement stmt = myC.getConnection().createStatement();
+			ResultSet rs = stmt.executeQuery(query_lastDate);
+			rs.next();
+			lastUpdateDate = rs.getDate("max(bdate)");
+		} catch(Exception e){
+			System.out.println("Error getting last date. Exiting.");
 			System.exit(0);
 		}
 
-		System.out.println("Changed Date.");
+		//make sure new date is after old date
+		try{
+			if (newDate.compareTo( lastUpdateDate ) <= 0) throw new Exception();
+		} catch(Exception e) {
+			System.out.println("Error: The date you entered is today or before today. Exiting.");
+			System.exit(0);
+		}
+
+		//figure out how many days we need to insert balance history for
+		int daysBetween = 0;
+		//if this is the first new date of the month set past balances for the entire new month
+		if( newDate.getMonth() != lastUpdateDate.getMonth() || newDate.getYear() != lastUpdateDate.getYear() )
+			daysBetween = newDate.getDate();
+
+		//else set past balances for days in between last update day and today
+		else
+			daysBetween = newDate.getDate() - lastUpdateDate.getDate();
+
+		//set balance history for all customers and for all days
+		String query_allCustomers = "select * from customerProfile";
+
+	    int customerIDiter = 0;
+	    try{
+			Statement stmt_AllCustomers = myC.getConnection().createStatement();
+			ResultSet rs = stmt_AllCustomers.executeQuery(query_allCustomers);
+			while(rs.next())
+			{
+				customerIDiter = rs.getInt("taxid");
+
+				//insert past balances for all missed days
+				for(int i=0; i<daysBetween; i++)
+				{
+					String insertPastBalanceStatement = "insert into balances values(" + customerIDiter
+						+ ",";
+			    	try{
+				    	Statement stmt_insertPastBalances = myC.getConnection().createStatement();
+						int ex = stmt_insertPastBalances.executeUpdate(insertPastBalanceStatement);
+					} catch (Exception e){
+						System.out.println("Error inserting new transaction in database. Exiting.");
+						System.exit(0);
+					}
+				}
+			}
+		} catch(Exception e){
+			System.out.println("Error updating date. Exiting.");
+			System.exit(0);
+		}
+
+
+		System.out.println("Changed Date to " + newDateS);
+
 	}
 }
