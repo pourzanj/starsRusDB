@@ -1,0 +1,81 @@
+CREATE TABLE customerProfile(taxid INTEGER, name CHAR(30), acctBalance REAL, email CHAR(40), phoneNum CHAR(12), state CHAR(2), PRIMARY KEY (taxid))
+
+INSERT INTO customerProfile VALUES (1022, 'Alfred Hitchcock', 10000, 'alfred@hotmail.com', '(805)2574499' , 'CA')
+INSERT INTO customerProfile VALUES(3045, 'Billy Clinton', 100000, 'billy@yahoo.com', '(805)5629999', 'CA')
+INSERT INTO customerProfile VALUES(2034, 'Cindy Laugher', 50000, 'cindy@hotmail.com', '(805)6930011', 'CA')
+INSERT INTO customerProfile VALUES(4093, 'David Copperfill', 45000, 'david@yahoo.com', '(805)8240011', 'CA')
+INSERT INTO customerProfile VALUES(1234, 'Elizabeth Sailor', 200000, 'sailor@hotmail.com', '(805)1234567', 'CA')
+INSERT INTO customerProfile VALUES(8956, 'George Brush', 5000, 'george@hotmail.com', '(805)1357999', 'CA')
+INSERT INTO customerProfile VALUES(2341, 'Ivan Stock', 2000, 'ivan@yahoo.com', '(805)3223243', 'NJ')
+INSERT INTO customerProfile VALUES(0456, 'Joe Pepsi', 10000, 'pepsi@pepsi.com', '(805)5668123', 'CA')
+INSERT INTO customerProfile VALUES(3455, 'Magic Jordon', 130200, 'jordon@jordon.org', '(805)4535539', 'NJ')
+INSERT INTO customerProfile VALUES(1123, 'Olive Stoner', 35000, 'olive@yahoo.com', '(805)2574499', 'CA')
+INSERT INTO customerProfile VALUES(3306, 'Frank Olson', 30500, 'frank@gmail.com', '(805)3456789', 'CA')
+
+
+CREATE TABLE screenname(username CHAR(20), password CHAR(20), taxid INTEGER , PRIMARY KEY(username), FOREIGN KEY(taxid) REFERENCES customerProfile ON DELETE CASCADE)
+
+INSERT INTO screenname VALUES('alfred', 'hi',1022)
+INSERT INTO screenname VALUES('billy', 'cl', 3045)
+INSERT INTO screenname VALUES('cindy', 'la', 2034)
+INSERT INTO screenname VALUES('david', 'co', 4093)
+INSERT INTO screenname VALUES('sailor', 'sa', 1234)
+INSERT INTO screenname VALUES('brush', 'br', 8956)
+INSERT INTO screenname VALUES('ivan', 'st', 2341)
+INSERT INTO screenname VALUES('joe', 'pe', 0456)
+INSERT INTO screenname VALUES('magic', 'jo', 3455)
+INSERT INTO screenname VALUES('olive', 'st', 1123)
+INSERT INTO screenname VALUES('frank', 'ol', 3306)
+
+
+CREATE TABLE actorStock(symbol CHAR(3), name CHAR(30), DoB CHAR(20), currentPrice REAL, PRIMARY KEY(symbol))
+
+INSERT INTO actorStock VALUES('SKB', 'Kim Basinger', '8 December 1958', 40.0)
+INSERT INTO actorStock VALUES('SMD', 'Michael Douglas', '25 September 1944', 71.0)
+INSERT INTO actorStock VALUES('STC', 'Tom Cruise', '3 July 1962', 32.50)
+
+
+CREATE TABLE transactions(transactionID INTEGER, quantity INTEGER, tdate date, buyOrSell CHAR(1), price REAL, boughtPrice REAL, taxid INTEGER, symbol CHAR(3), PRIMARY KEY (transactionID), FOREIGN KEY (taxid) REFERENCES customerProfile ON DELETE CASCADE, FOREIGN KEY (symbol) REFERENCES actorStock)
+
+
+CREATE TABLE stockAccount(totalQuantity INTEGER, taxid INTEGER, symbol CHAR(3), PRIMARY KEY(taxid, symbol), FOREIGN KEY (taxid) REFERENCES customerProfile ON DELETE CASCADE, FOREIGN KEY (symbol) REFERENCES actorStock)
+
+INSERT INTO stockAccount VALUES(200, 1022, 'SMD');
+INSERT INTO stockAccount VALUES(100, 1022, 'SKB');
+INSERT INTO stockAccount VALUES(500, 3045, 'SMD');
+INSERT INTO stockAccount VALUES(100, 3045, 'STC');
+INSERT INTO stockAccount VALUES(250, 2034, 'STC');
+INSERT INTO stockAccount VALUES(100, 4093, 'SKB');
+INSERT INTO stockAccount VALUES(500, 4093, 'SMD');
+INSERT INTO stockAccount VALUES(50, 4093, 'STC');
+INSERT INTO stockAccount VALUES(1000, 1234, 'SMD');
+INSERT INTO stockAccount VALUES(100, 8956, 'SKB');
+INSERT INTO stockAccount VALUES(300, 2341, 'SMD');
+INSERT INTO stockAccount VALUES(500, 0456, 'SKB');
+INSERT INTO stockAccount VALUES(100, 0456, 'STC');
+INSERT INTO stockAccount VALUES(200, 0456, 'SMD');
+INSERT INTO stockAccount VALUES(1000, 3455, 'SKB');
+INSERT INTO stockAccount VALUES(100, 1123, 'SKB');
+INSERT INTO stockAccount VALUES(100, 1123, 'SMD');
+INSERT INTO stockAccount VALUES(100, 1123, 'STC');
+INSERT INTO stockAccount VALUES(100, 3306, 'SKB');
+INSERT INTO stockAccount VALUES(200, 3306, 'STC');
+INSERT INTO stockAccount VALUES(100, 3306, 'SMD');
+
+
+CREATE TABLE balances(taxid INTEGER, bdate date, price real, PRIMARY KEY (taxid, bdate), FOREIGN KEY (taxid) REFERENCES customerProfile)
+
+INSERT INTO balances VALUES(1022, '16-mar-13',10000)
+INSERT INTO balances VALUES(3045, '16-mar-13',100000)
+INSERT INTO balances VALUES(2034, '16-mar-13',50000)
+INSERT INTO balances VALUES(4093, '16-mar-13',45000)
+INSERT INTO balances VALUES(1234, '16-mar-13',200000)
+INSERT INTO balances VALUES(8956, '16-mar-13',5000)
+INSERT INTO balances VALUES(2341, '16-mar-13',2000)
+INSERT INTO balances VALUES(0456, '16-mar-13',10000)
+INSERT INTO balances VALUES(3455, '16-mar-13',130200)
+INSERT INTO balances VALUES(1123, '16-mar-13',35000)
+INSERT INTO balances VALUES(3306, '16-mar-13',30500)
+
+-whereever we insert (only in buy and sell)
+-where ever we print the date (only in showTransactions)
