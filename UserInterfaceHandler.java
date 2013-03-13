@@ -266,7 +266,7 @@ public class UserInterfaceHandler implements transactionHandler
 	    try {
 	    	if( amount <= 0 ) throw new NegativeNumberException();
 	    } catch (NegativeNumberException nne) {
-	    	System.out.println("Deposit and Withdraw Values must be positive . Exiting.");
+	    	System.out.println("Deposit and withdraw Values must be positive. Exiting.");
 			System.exit(0);
 	    }
 
@@ -323,7 +323,7 @@ public class UserInterfaceHandler implements transactionHandler
 		try {
 			commandArg = br.readLine();
 		} catch (IOException ioe) {
-			System.out.println("Error Reading Command. Exiting.");
+			System.out.println("Error reading command. Exiting.");
 			System.exit(0);
 		}
 		String stockSymbol = commandArg;
@@ -359,7 +359,7 @@ public class UserInterfaceHandler implements transactionHandler
 		try {
 			commandArg = br.readLine();
 		} catch (IOException ioe) {
-			System.out.println("Error Reading Command. Exiting.");
+			System.out.println("Error reading command. Exiting.");
 			System.exit(0);
 		}
 
@@ -382,30 +382,31 @@ public class UserInterfaceHandler implements transactionHandler
 	    if(action.equals("sell")) {
 	    	System.out.println("Please enter the price you bought your stock at for tax purposes.");
 
-			try {
-				commandArg = br.readLine();
-			} catch (IOException ioe) {
-				System.out.println("Error Reading Command. Exiting.");
-				System.exit(0);
-			}
+		try {
+			commandArg = br.readLine();
+		} catch (IOException ioe) {
+			System.out.println("Error Reading Command. Exiting.");
+			System.exit(0);
+		}
 
-			try {
+		try {
 	    		boughtAmount = Double.valueOf( commandArg );
 	    	} catch (NumberFormatException nfe) {
 	    		System.out.println("Entered value is not a number. Exiting.");
 				System.exit(0);
 	    	}
 
-			try {
+		try {
 	    		if( boughtAmount <= 0 ) throw new NegativeNumberException();
 	    	} catch (NegativeNumberException nne) {
 	    		System.out.println("Stocks can not be bought at negative values. Exiting.");
 				System.exit(0);
 	    	}
 	    }
-
 	    //~~EXECUTE TRADE in DATABASE
 	    //MAKE SURE USER HAS ENOUGH MONEY TO EXECUTE THE TRADE
+	    int comissionCost = 20;
+	    //SELL
 	    if(action.equals("sell"))
 	    {
 	    	//(1)create transaction in database
@@ -450,7 +451,7 @@ public class UserInterfaceHandler implements transactionHandler
 			}
 			
 			//(2)update balance
-			String acctBalanceUpdate = "update customerProfile SET acctbalance = acctbalance + " + (amount*currentprice) +
+			String acctBalanceUpdate = "update customerProfile SET acctbalance = acctbalance + " + (amount*(currentprice-boughtAmount)-comissionCost) +
 				" WHERE taxid=" + acctIDnum;
 			try{
 		    	Statement stmt = myC.getConnection().createStatement();
@@ -478,11 +479,11 @@ public class UserInterfaceHandler implements transactionHandler
 	    	double currentBalance = getCurrentBalance();
 	    	double currentPrice = getCurrentPrice(stockSymbol);
 
-	    	if(currentBalance < (amount*currentPrice))
+	    	if(currentBalance < (amount*currentPrice-comissionCost))
 	    		System.out.println("Sorry, you do not have enough cash available for this trade.");
 	    	else {
 	    		//withdraw cash
-	    		String update = "update customerProfile SET acctbalance = acctbalance - " + (amount*currentPrice) + " WHERE taxid=" + acctIDnum;
+	    		String update = "update customerProfile SET acctbalance = acctbalance - " + (amount*currentPrice-comissionCost) + " WHERE taxid=" + acctIDnum;
 		    	System.out.println("withdraw string: " + update);
 		    	try{
 			    	Statement stmt = myC.getConnection().createStatement();
@@ -506,22 +507,22 @@ public class UserInterfaceHandler implements transactionHandler
 		    		todaysDate + "'," + "'b'" + "," + currentprice + "," + boughtAmount + "," + acctIDnum + ",'" + stockSymbol + "')";
 		    	try{
 			    	Statement stmt = myC.getConnection().createStatement();
-					int ex = stmt.executeUpdate(insertTransUpdate);
-				} catch (Exception e){
-					System.out.println("Error inserting new transaction in database. Exiting.");
-					System.exit(0);
-				}
+				int ex = stmt.executeUpdate(insertTransUpdate);
+			} catch (Exception e){
+				System.out.println("Error inserting new transaction in database. Exiting.");
+				System.exit(0);
+			}
 
-				//update stock account
-				String stockAcctUpdate = "update stockAccount SET totalquantity = totalquantity + " + amount +
-					" WHERE taxid=" + acctIDnum + " AND symbol = '" + stockSymbol + "'";
-				try{
+			//update stock account
+			String stockAcctUpdate = "update stockAccount SET totalquantity = totalquantity + " + amount +
+				" WHERE taxid=" + acctIDnum + " AND symbol = '" + stockSymbol + "'";
+			try{
 			    	Statement stmt = myC.getConnection().createStatement();
-					int ex = stmt.executeUpdate(stockAcctUpdate);
-				} catch (Exception e){
-					System.out.println("Error updating stock account. Exiting.");
-					System.exit(0);
-				}
+				int ex = stmt.executeUpdate(stockAcctUpdate);
+			} catch (Exception e){
+				System.out.println("Error updating stock account. Exiting.");
+				System.exit(0);
+			}
 
 	    	}
 	    	
@@ -532,7 +533,7 @@ public class UserInterfaceHandler implements transactionHandler
 
 	public void showBalance()
 	{
-		System.out.println("Here is the balance:\n");
+		System.out.println("Here is the balance:");
 		try {
 			Statement st = myC.getConnection().createStatement();
 			ResultSet rs = st.executeQuery("select * from customerProfile where taxid = '" + acctIDnum + "'");
@@ -547,7 +548,7 @@ public class UserInterfaceHandler implements transactionHandler
 
 	public void showTransactions()
 	{
-		System.out.println("Here are the transactions:\n");
+		System.out.println("Here are the transactions:");
 		try {
 			Statement st = myC.getConnection().createStatement();
 			ResultSet rs = st.executeQuery("select * from transactions");
@@ -558,8 +559,9 @@ public class UserInterfaceHandler implements transactionHandler
 				System.out.println(" Date: " + rs.getString(3));
 				System.out.println(" Buy/Sell: " + rs.getString(4));
 				System.out.println(" Price: " + rs.getDouble(5));
-				System.out.println(" Tax ID: " + rs.getInt(6));
-				System.out.println(" Symbol: " + rs.getString(7));
+				System.out.println(" Bought price: " + rs.getDouble(6));
+				System.out.println(" Tax ID: " + rs.getInt(7));
+				System.out.println(" Symbol: " + rs.getString(8));
 			}
 		} catch (SQLException e) {
 			System.out.println("Unable to list the transactions. Exiting.");
