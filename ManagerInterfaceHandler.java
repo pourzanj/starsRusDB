@@ -176,50 +176,54 @@ public class ManagerInterfaceHandler implements transactionHandler
 				customerIDiter = rs.getInt("taxid");
 
 				Date todaysDate = getTodaysDate();
+				int startingDay = todaysDate.getDate();
+				int startingYear = todaysDate.getYear() - 100;
 				int startingMonth = todaysDate.getMonth();
 				String monthString = null;
 					switch( startingMonth ){
 						case 0:
-							monthString = "jan";
+							monthString = "JAN";
 							break;
 						case 1:
-							monthString = "feb";
+							monthString = "FEB";
 							break;
 						case 2:
-							monthString = "mar";
+							monthString = "MAR";
 							break;
 						case 3:
-							monthString = "apr";
+							monthString = "APR";
 							break;
 						case 4:
-							monthString = "may";
+							monthString = "MAY";
 							break;
 						case 5:
-							monthString = "jun";
+							monthString = "JUN";
 							break;
 						case 6:
-							monthString = "jul";
+							monthString = "JUL";
 							break;
 						case 7:
-							monthString = "aug";
+							monthString = "AUG";
 							break;
 						case 8:
-							monthString = "sep";
+							monthString = "SEP";
 							break;
 						case 9:
-							monthString = "oct";
+							monthString = "OCT";
 							break;
 						case 10:
-							monthString = "nov";
+							monthString = "NOV";
 							break;
 						case 11:
-							monthString = "dec";
+							monthString = "DEC";
 							break;
 					}
 
 				//get customer's average balance for this whole month up to today
 				String balancesQuery = "select * from balances where To_Char(bdate,'MON') = " + "'" + monthString + "'"
-					+ " AND taxid = " + customerIDiter;
+					+ " AND taxid = " + 1022;
+
+				System.out.println(balancesQuery);
 
 				double averageBalance = 0;
 				int nDays = 0;
@@ -237,10 +241,38 @@ public class ManagerInterfaceHandler implements transactionHandler
 					System.exit(0);
 				}
 
+				//System.out.println("average: " + averageBalance + " nDays: " + nDays);
+
 				//divide to get true averageBalance
 				averageBalance = averageBalance/nDays;
 
 				double interestAmount = 0.03 * averageBalance;
+
+				//System.out.println("interest amount is: " + interestAmount);
+
+				//add interest amount
+				String update = "update customerProfile SET acctbalance = acctbalance + " + interestAmount + " WHERE taxid=" + 1022;
+		    	try{
+			    	Statement stmt_update = myC.getConnection().createStatement();
+					int ex = stmt_update.executeUpdate(update);
+				} catch (Exception e){
+					System.out.println("Error depositing interest. Exiting.");
+					System.exit(0);
+				}
+
+				//update balances table as well
+				String updateB = "update balances SET price = price + " + interestAmount + " WHERE taxid=" + 1022 + " AND "
+					+ "bdate='" + startingDay + "-" + monthString + "-" + startingYear + "'";
+
+		    	try{
+			    	Statement stmt_update = myC.getConnection().createStatement();
+					int ex = stmt_update.executeUpdate(updateB);
+				} catch (Exception e){
+					System.out.println("Error depositing interest. Exiting.");
+					System.exit(0);
+				}
+
+				System.out.println("Added " + interestAmount + " interest to " + 1022);
 
 			}
 		} catch(Exception e){
