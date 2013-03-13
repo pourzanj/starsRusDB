@@ -11,8 +11,8 @@ public class UserInterfaceHandler implements transactionHandler
 {
 	private int acctIDnum;
 	private ConnectionHandler myC;
-
-	private String getTodaysDate()
+	/*
+	private Date getTodaysDate()
 	{	
 		String line = "";
 		try{
@@ -23,9 +23,10 @@ public class UserInterfaceHandler implements transactionHandler
 			System.out.println("Error retrieving today's date. Exiting");
 	    	System.exit(0);
 		}
-		return line;
+		Date d = new Date(line); 
+		return d;
 	}
-
+	*/
 	private double getCurrentPrice(String sym)
 	{
 		double currentprice = -1;
@@ -63,11 +64,11 @@ public class UserInterfaceHandler implements transactionHandler
 
 	private int getTransactionNumber()
 	{
-		int tID = -1;
+	    int tID = -1;
 	    String queryResult = "select * from transactions";
 
 	    ResultSet rsTnum = null;
-		   try{
+		try{
 			Statement stmt = myC.getConnection().createStatement();
 			rsTnum = stmt.executeQuery(queryResult);
 		} catch(Exception e){
@@ -434,14 +435,14 @@ public class UserInterfaceHandler implements transactionHandler
 	    	int tID = getTransactionNumber();
 
 			//get date
-			String todaysDate = getTodaysDate();
+			//Date todaysDate = getTodaysDate();
 
 			//get current price
 			double currentprice = getCurrentPrice( stockSymbol );
 
 			//insert transaction
-	    	String insertTransUpdate = "insert into transactions values(" + tID + "," + amount + ",'" +
-	    		todaysDate + "'," + "'s'" + "," + currentprice + "," + boughtAmount + "," + acctIDnum + ",'" + stockSymbol + "')";
+	    	String insertTransUpdate = "insert into transactions values(" + tID + "," + amount + "," +
+	    		"sysdate" + "," + "'s'" + "," + currentprice + "," + boughtAmount + "," + acctIDnum + ",'" + stockSymbol + "')";
 	    	try{
 		    	Statement stmt = myC.getConnection().createStatement();
 				int ex = stmt.executeUpdate(insertTransUpdate);
@@ -484,28 +485,28 @@ public class UserInterfaceHandler implements transactionHandler
 	    	else {
 	    		//withdraw cash
 	    		String update = "update customerProfile SET acctbalance = acctbalance - " + (amount*currentPrice-comissionCost) + " WHERE taxid=" + acctIDnum;
-		    	System.out.println("withdraw string: " + update);
+		    	//System.out.println("withdraw string: " + update);
 		    	try{
 			    	Statement stmt = myC.getConnection().createStatement();
-					int ex = stmt.executeUpdate(update);
-				} catch (Exception e){
-					System.out.println("Error taking cash out of account for trade. Exiting.");
-					System.exit(0);
-				}
+				int ex = stmt.executeUpdate(update);
+			} catch (Exception e){
+				System.out.println("Error taking cash out of account for trade. Exiting.");
+				System.exit(0);
+			}
 
-				//get transaction number
+			//get transaction number
 	    		int tID = getTransactionNumber();
 
 	    		//get date
-				String todaysDate = getTodaysDate();
+			//Date todaysDate = getTodaysDate();
 
-				//get current price
-				double currentprice = getCurrentPrice( stockSymbol );
+			//get current price
+			double currentprice = getCurrentPrice( stockSymbol );
 
-				//insert transaction
-				String insertTransUpdate = "insert into transactions values(" + tID + "," + amount + ",'" +
-		    		todaysDate + "'," + "'b'" + "," + currentprice + "," + boughtAmount + "," + acctIDnum + ",'" + stockSymbol + "')";
-		    	try{
+			//insert transaction
+			String insertTransUpdate = "insert into transactions values(" + tID + "," + amount + "," +
+		    	"sysdate" + "," + "'b'" + "," + currentprice + "," + boughtAmount + "," + acctIDnum + ",'" + stockSymbol + "')";
+		    	try {
 			    	Statement stmt = myC.getConnection().createStatement();
 				int ex = stmt.executeUpdate(insertTransUpdate);
 			} catch (Exception e){
@@ -556,7 +557,7 @@ public class UserInterfaceHandler implements transactionHandler
 				System.out.println("Transaction info:");
 				System.out.println(" Transaction ID: " + rs.getInt(1));
 				System.out.println(" Quantity: " + rs.getInt(2));
-				System.out.println(" Date: " + rs.getString(3));
+				System.out.println(" Date: " + rs.getDate(3));
 				System.out.println(" Buy/Sell: " + rs.getString(4));
 				System.out.println(" Price: " + rs.getDouble(5));
 				System.out.println(" Bought price: " + rs.getDouble(6));
