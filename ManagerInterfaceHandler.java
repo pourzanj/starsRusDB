@@ -221,7 +221,7 @@ public class ManagerInterfaceHandler implements transactionHandler
 
 				//get customer's average balance for this whole month up to today
 				String balancesQuery = "select * from balances where To_Char(bdate,'MON') = " + "'" + monthString + "'"
-					+ " AND taxid = " + 1022;
+					+ " AND taxid = " + customerIDiter;
 
 				System.out.println(balancesQuery);
 
@@ -251,7 +251,7 @@ public class ManagerInterfaceHandler implements transactionHandler
 				//System.out.println("interest amount is: " + interestAmount);
 
 				//add interest amount
-				String update = "update customerProfile SET acctbalance = acctbalance + " + interestAmount + " WHERE taxid=" + 1022;
+				String update = "update customerProfile SET acctbalance = acctbalance + " + interestAmount + " WHERE taxid=" + customerIDiter;
 		    	try{
 			    	Statement stmt_update = myC.getConnection().createStatement();
 					int ex = stmt_update.executeUpdate(update);
@@ -261,7 +261,7 @@ public class ManagerInterfaceHandler implements transactionHandler
 				}
 
 				//update balances table as well
-				String updateB = "update balances SET price = price + " + interestAmount + " WHERE taxid=" + 1022 + " AND "
+				String updateB = "update balances SET price = price + " + interestAmount + " WHERE taxid=" + customerIDiter + " AND "
 					+ "bdate='" + startingDay + "-" + monthString + "-" + startingYear + "'";
 
 		    	try{
@@ -272,7 +272,7 @@ public class ManagerInterfaceHandler implements transactionHandler
 					System.exit(0);
 				}
 
-				System.out.println("Added " + interestAmount + " interest to " + 1022);
+				System.out.println("Added " + interestAmount + " interest to " + customerIDiter);
 
 			}
 		} catch(Exception e){
@@ -285,27 +285,58 @@ public class ManagerInterfaceHandler implements transactionHandler
 
 	public void generateMonthlyStatement()
 	{
+		//prompt manager for user id
+
+
+		//get users name to print
+
+		//get email address to print
+
+		//get initial balance for month to print
+
+		//get final balance for month to print
+
+		//get total loss/earning to print (include commissions) (should just be final-initial balance)
+
+		//print transactions
+
 
 	}
 
 	public void ListActiveCustomers()
 	{
+		//get list of all users, iterate through them, iterate through
+		//each of their transactions and keep a running sum of the total quantity traded
+		//if there are no transactions this month exit program
 
 	}
 
 	public void generateTaxReport()
 	{
+		//get list of all users, iterate through them
+
+			//get balance at the beginning of the month
+			//get balance today
+			//compare to see if the person earned 10,000
+
+			//if so print out the users taxid and state of residence
+
 
 	}
 
 	public void generateCustomerReport()
 	{
+		//prompt manager for any customers taxid
 
+		//get the customers acctBalance and print it
+
+		//do query of all stock account associated with the taxid and iterate
+		//through them with a while loop while print out they're total quantity and symbol
 	}
 
 	public void deleteTransactions()
 	{
-		
+		//select all transactions and delete all
 	}
 
 
