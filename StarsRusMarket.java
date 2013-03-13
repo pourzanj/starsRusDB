@@ -24,7 +24,11 @@ public class StarsRusMarket
       //attempt login based on mode
       LoginHandler L;
       ConnectionHandler C = null;
+<<<<<<< HEAD
      UserInterfaceHandler U = null;
+=======
+	  UserInterfaceHandler U = null;
+>>>>>>> upstream/master
       try {
       C = new ConnectionHandler();
       }
