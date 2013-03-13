@@ -175,19 +175,72 @@ public class ManagerInterfaceHandler implements transactionHandler
 			{
 				customerIDiter = rs.getInt("taxid");
 
-				//get customer's balance for the whole month
-				String balanceQuery = "select * from customerProfile where taxid = " + customerIDiter;
+				todaysDate = getTodaysDate();
+				int startingMonth = newDate.getMonth();
+				String monthString = null;
+					switch( startingMonth ){
+						case 0:
+							monthString = "jan";
+							break;
+						case 1:
+							monthString = "feb";
+							break;
+						case 2:
+							monthString = "mar";
+							break;
+						case 3:
+							monthString = "apr";
+							break;
+						case 4:
+							monthString = "may";
+							break;
+						case 5:
+							monthString = "jun";
+							break;
+						case 6:
+							monthString = "jul";
+							break;
+						case 7:
+							monthString = "aug";
+							break;
+						case 8:
+							monthString = "sep";
+							break;
+						case 9:
+							monthString = "oct";
+							break;
+						case 10:
+							monthString = "nov";
+							break;
+						case 11:
+							monthString = "dec";
+							break;
+					}
 
-				double currentBalance = 0;
+				//get customer's average balance for this whole month up to today
+				String balancesQuery = "select * from balances where To_Char(bdate,'MON') = " + "'" + monthString + "'"
+					+ " AND taxid = " + taxid;
+
+				double averageBalance = 0;
+				int nDays = 0;
 			    try{
 					Statement stmt_balance = myC.getConnection().createStatement();
-					ResultSet balanceRS = stmt_balance.executeQuery(balanceQuery);
-					balanceRS.next();
-					currentBalance = balanceRS.getDouble("acctbalance");
+					ResultSet balanceRS = stmt_balance.executeQuery(balancesQuery);
+					while( balanceRS.next() )
+					{
+						averageBalance += balanceRS.getDouble("price");
+						nDays++;
+					}
+					
 				} catch(Exception e){
-					System.out.println("Error checking account balance when updating past balances. Exiting.");
+					System.out.println("Error checking account balance when adding interest. Exiting.");
 					System.exit(0);
 				}
+
+				//divide to get true averageBalance
+				averageBalance = averageBalance/nDays;
+
+				double interestAmount = 0.03 * averageBalance;
 
 			}
 		} catch(Exception e){
