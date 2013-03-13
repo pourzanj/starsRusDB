@@ -12,9 +12,9 @@ public class UserInterfaceHandler implements transactionHandler
 	private int acctIDnum;
 	private ConnectionHandler myC;
 	
-	private Date getTodaysDate()
+	private String getTodaysDate()
 	{	
-		String query_lastDate = "select max(bdate) from balances";
+	    String query_lastDate = "select max(bdate) from balances";
 
 	    Date lastUpdateDate = null;
 	    try{
@@ -22,13 +22,62 @@ public class UserInterfaceHandler implements transactionHandler
 			ResultSet rs = stmt.executeQuery(query_lastDate);
 			rs.next();
 			lastUpdateDate = rs.getDate("max(bdate)");
-		} catch(Exception e){
+	    } catch(Exception e){
 			System.out.println("Error getting last date. Exiting.");
 			System.exit(0);
+	    }
+
+	    //return lastUpdateDate;
+		int startingMonth = lastUpdateDate.getMonth();
+		int startingDay = lastUpdateDate.getDate();
+		int startingYear = lastUpdateDate.getYear() - 100;
+		String monthString = null;
+		switch( startingMonth ){
+			case 0:
+				monthString = "jan";
+				break;
+			case 1:
+				monthString = "feb";
+				break;
+			case 2:
+				monthString = "mar";
+				break;
+			case 3:
+				monthString = "apr";
+				break;
+			case 4:
+				monthString = "may";
+				break;
+			case 5:
+				monthString = "jun";
+				break;
+			case 6:
+				monthString = "jul";
+				break;
+			case 7:
+				monthString = "aug";
+				break;
+			case 8:
+				monthString = "sep";
+				break;
+			case 9:
+				monthString = "oct";
+				break;
+			case 10:
+				monthString = "nov";
+				break;
+			case 11:
+				monthString = "dec";
+				break;
 		}
 
-		return lastUpdateDate;
-
+		String dayString = null;
+		if(startingDay < 9)
+			dayString = "0" + (startingDay);
+		else
+			dayString = "" + (startingDay);
+		String dateQueryString = "'" + dayString + "-" + monthString + "-" + startingYear + "'";
+		return dateQueryString;
 	}
 	
 	private double getCurrentPrice(String sym)
@@ -439,67 +488,14 @@ public class UserInterfaceHandler implements transactionHandler
 	    	int tID = getTransactionNumber();
 
 			//get date
-			Date todaysDate = getTodaysDate();
-
-			//format date string properly
-			int startingMonth = todaysDate.getMonth();
-			int startingDay = todaysDate.getDate();
-			int startingYear = todaysDate.getYear() - 100;
-			String monthString = null;
-					switch( startingMonth ){
-						case 0:
-							monthString = "jan";
-							break;
-						case 1:
-							monthString = "feb";
-							break;
-						case 2:
-							monthString = "mar";
-							break;
-						case 3:
-							monthString = "apr";
-							break;
-						case 4:
-							monthString = "may";
-							break;
-						case 5:
-							monthString = "jun";
-							break;
-						case 6:
-							monthString = "jul";
-							break;
-						case 7:
-							monthString = "aug";
-							break;
-						case 8:
-							monthString = "sep";
-							break;
-						case 9:
-							monthString = "oct";
-							break;
-						case 10:
-							monthString = "nov";
-							break;
-						case 11:
-							monthString = "dec";
-							break;
-					}
-
-					String dayString = null;
-					if(startingDay < 9)
-						dayString = "0" + (startingDay);
-					else
-						dayString = "" + (startingDay);
-
-			String dateQueryString = "'" + dayString + "-" + monthString + "-" + startingYear + "'";
-
+			String todaysDate = getTodaysDate();
 
 			//get current price
 			double currentprice = getCurrentPrice( stockSymbol );
 
 			//insert transaction
 	    	String insertTransUpdate = "insert into transactions values(" + tID + "," + amount + "," +
-	    		dateQueryString + "," + "'s'" + "," + currentprice + "," + boughtAmount + "," + acctIDnum + ",'" + stockSymbol + "')";
+	    		todaysDate + "," + "'s'" + "," + currentprice + "," + boughtAmount + "," + acctIDnum + ",'" + stockSymbol + "')";
 	    	try{
 		    	Statement stmt = myC.getConnection().createStatement();
 				int ex = stmt.executeUpdate(insertTransUpdate);
@@ -555,14 +551,14 @@ public class UserInterfaceHandler implements transactionHandler
 	    		int tID = getTransactionNumber();
 
 	    		//get date
-			//Date todaysDate = getTodaysDate();
+			String todaysDate = getTodaysDate();
 
 			//get current price
 			double currentprice = getCurrentPrice( stockSymbol );
 
 			//insert transaction
 			String insertTransUpdate = "insert into transactions values(" + tID + "," + amount + "," +
-		    	"sysdate" + "," + "'b'" + "," + currentprice + "," + boughtAmount + "," + acctIDnum + ",'" + stockSymbol + "')";
+		    	todaysDate + "," + "'b'" + "," + currentprice + "," + boughtAmount + "," + acctIDnum + ",'" + stockSymbol + "')";
 		    	try {
 			    	Statement stmt = myC.getConnection().createStatement();
 				int ex = stmt.executeUpdate(insertTransUpdate);
