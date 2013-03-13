@@ -223,7 +223,7 @@ public class ManagerInterfaceHandler implements transactionHandler
 				String balancesQuery = "select * from balances where To_Char(bdate,'MON') = " + "'" + monthString + "'"
 					+ " AND taxid = " + customerIDiter;
 
-				System.out.println(balancesQuery);
+				//System.out.println(balancesQuery);
 
 				double averageBalance = 0;
 				int nDays = 0;
@@ -286,19 +286,119 @@ public class ManagerInterfaceHandler implements transactionHandler
 	public void generateMonthlyStatement()
 	{
 		//prompt manager for user id
-
-
 		//get users name to print
-
 		//get email address to print
+		//get current balance for month to print
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		String commandArg = null;
+		System.out.println("Please enter a valid customer tax id:");
+	    	try {
+			commandArg = br.readLine();
+		} catch (IOException ioe) {
+			System.out.println("Error reading command. Exiting.");
+			System.exit(0);
+		}
+		int taxid = 0;
+		taxid = Integer.valueOf(commandArg);
 
-		//get initial balance for month to print
+		Date todaysDate = getTodaysDate();
+		double currentBalance = 0;
+		try {
+			Statement st = myC.getConnection().createStatement();
+			ResultSet rs = st.executeQuery("select * from customerProfile where taxid = '" + taxid + "'");
+			rs.next();
+			//get the customers acctBalance and print it
+			System.out.println("User's Name: " + rs.getString("name"));
+			System.out.println("User's Email: " + rs.getString("email"));
+			currentBalance = rs.getDouble("acctBalance");
+			System.out.println("User's Current Balance: " + currentBalance);
+		}
+		catch (SQLException e) {
+			System.out.println("Unable to generate monthly statement. Exiting.");
+			System.exit(0);
+		}
 
-		//get final balance for month to print
+		//get balance at the beginning of the month
+		int startingMonth = todaysDate.getMonth();
+				String monthString = null;
+					switch( startingMonth ){
+						case 0:
+							monthString = "JAN";
+							break;
+						case 1:
+							monthString = "FEB";
+							break;
+						case 2:
+							monthString = "MAR";
+							break;
+						case 3:
+							monthString = "APR";
+							break;
+						case 4:
+							monthString = "MAY";
+							break;
+						case 5:
+							monthString = "JUN";
+							break;
+						case 6:
+							monthString = "JUL";
+							break;
+						case 7:
+							monthString = "AUG";
+							break;
+						case 8:
+							monthString = "SEP";
+							break;
+						case 9:
+							monthString = "OCT";
+							break;
+						case 10:
+							monthString = "NOV";
+							break;
+						case 11:
+							monthString = "DEC";
+							break;
+					}
 
-		//get total loss/earning to print (include commissions) (should just be final-initial balance)
+		String balancesQuery = "select min(bdate) from balances where To_Char(bdate,'MON') = " + "'" + monthString + "'"
+					+ " AND taxid = " + taxid;
 
-		//print transactions
+		System.out.println(balancesQuery);
+
+		double beginBalance = 0;
+		try{
+			Statement stmt_balance = myC.getConnection().createStatement();
+			ResultSet balanceRS = stmt_balance.executeQuery(balancesQuery);
+			beginBalance = balanceRS.getDouble("min(bdate)");
+					
+		} catch(Exception e){
+			System.out.println("Error checking account balance when print monthly statement. Exiting.");
+			System.exit(0);
+		}
+		System.out.println("User's First Month was Balance: " + beginBalance);
+
+		//get total loss/earning to print (should just be final-initial balance)
+		double lossEarning = currentBalance - beginBalance;
+		System.out.println("Loss/Earning is: " + lossEarning);
+
+		//print transactions, tally up how many there were total to count how mauch commision was paid
+		String transactionsQuery = "select * from transactions where taxid = " + taxid;
+
+		int nTransactions = 0;
+		try{
+			Statement trans = myC.getConnection().createStatement();
+			ResultSet tRS = trans.executeQuery(transactionsQuery);
+			//iterate through transactions of user
+			while( tRS.next() )
+			{
+				nTransactions++;
+				//print the information about each transaction here
+			}
+					
+		} catch(Exception e){
+			System.out.println("Error listing transactions when generating monthly statement. Exiting.");
+			System.exit(0);
+		}
 
 
 	}
