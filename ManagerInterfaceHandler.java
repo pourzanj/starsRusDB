@@ -307,7 +307,45 @@ public class ManagerInterfaceHandler implements transactionHandler
 	{
 		//get list of all users, iterate through them, iterate through
 		//each of their transactions and keep a running sum of the total quantity traded
-		//if there are no transactions this month exit program
+
+		String query_allCustomers = "select * from customerProfile";
+
+	    int customerIDiter = 0;
+	    try{
+			Statement stmt_AllCustomers = myC.getConnection().createStatement();
+			ResultSet rs = stmt_AllCustomers.executeQuery(query_allCustomers);
+			while(rs.next())
+			{
+				customerIDiter = rs.getInt("taxid");
+
+				//get customer's balance
+				String transQuery = "select * from transactions where taxid = " + customerIDiter;
+
+				int totalQtyTraded = 0;
+			    try{
+					Statement stmt_trans = myC.getConnection().createStatement();
+					ResultSet quantityRS = stmt_trans.executeQuery(transQuery);
+					while( quantityRS.next() )
+					{
+						totalQtyTraded += quantityRS.getInt("quantity");
+					}
+					
+				} catch(Exception e){
+					System.out.println("Error going through transactions when listing active customers. Exiting.");
+					System.exit(0);
+				}
+
+				if( totalQtyTraded >= 1000 )
+				{
+					System.out.println("" + customerIDiter);
+				}
+		
+			}
+		} catch(Exception e){
+			System.out.println("Error listing active customers. Exiting.");
+			System.exit(0);
+		}
+
 
 	}
 
@@ -327,16 +365,57 @@ public class ManagerInterfaceHandler implements transactionHandler
 	public void generateCustomerReport()
 	{
 		//prompt manager for any customers taxid
-
-		//get the customers acctBalance and print it
-
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		String commandArg = null;
+		System.out.println("Please enter a valid customer tax id:");
+	    	try {
+			commandArg = br.readLine();
+		} catch (IOException ioe) {
+			System.out.println("Error reading command. Exiting.");
+			System.exit(0);
+		}
+		int taxid = 0;
+		taxid = Integer.valueOf(commandArg);
+		try {
+			Statement st = myC.getConnection().createStatement();
+			ResultSet rs = st.executeQuery("select * from customerProfile where taxid = '" + taxid + "'");
+			rs.next();
+			//get the customers acctBalance and print it
+			System.out.println("Current account balance: " + rs.getDouble("acctbalance"));
+		}
+		catch (SQLException e) {
+			System.out.println("Unable to show the balance. Exiting.");
+			System.exit(0);
+		}
 		//do query of all stock account associated with the taxid and iterate
 		//through them with a while loop while print out they're total quantity and symbol
+		System.out.println("Now attempting to print the total quantity and symbol of each stock corresponding to this tax id...");
+		try {
+			Statement st = myC.getConnection().createStatement();
+			ResultSet rs = st.executeQuery("select totalQuantity, symbol from stockAccount where taxid = " + taxid);
+			while (rs.next()) {
+				System.out.println("Stock:");
+				System.out.println(" Quantity: " + rs.getInt(1));
+				System.out.println(" Symbol: " + rs.getString(2));
+			}
+		} catch (SQLException e) {
+			System.out.println("Unable to list the stocks. Exiting.");
+			System.exit(0);
+		}
+
 	}
 
 	public void deleteTransactions()
 	{
 		//select all transactions and delete all
+		System.out.println("Deleting the transactions...");
+		try {
+			Statement st = myC.getConnection().createStatement();
+			int ex = st.executeUpdate("delete from transactions");
+		} catch (SQLException e) {
+			System.out.println("Unable to delete the transactions. Exiting.");
+			System.exit(0);
+		}
 	}
 
 
