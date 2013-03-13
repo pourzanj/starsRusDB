@@ -1,4 +1,3 @@
-
 import java.io.*;
 import java.sql.*;
 
@@ -25,38 +24,40 @@ public class StarsRusMarket
       //attempt login based on mode
       LoginHandler L;
       ConnectionHandler C = null;
+     UserInterfaceHandler U = null;
       try {
-		C = new ConnectionHandler();
+      C = new ConnectionHandler();
       }
       catch (SQLException e) {
-		System.out.println("Failed to connect to the database.");
-		System.exit(1);
+      System.out.println("Failed to connect to the database.");
+      System.exit(1);
       }
       String loginMode = args[0];//set login mode to first command line arg
       switch( loginMode ){
          case "user":
-            System.out.println("Attempting Login as User...");
+            System.out.println("Attempting login as user...");
             L = new LoginHandler("user", args[1], args[2],C);
-            UserInterfaceHandler U = new UserInterfaceHandler(args[1], C);
+            U = new UserInterfaceHandler(args[1], C);
             break;
          case "manager":
-            System.out.println("Attempting Login as Manager...");
+            System.out.println("Attempting login as manager...");
             L = new LoginHandler("manager", "NA", args[2],C);
             ManagerInterfaceHandler M = new ManagerInterfaceHandler(C);
             break;
          case "admin":
-            System.out.println("Attempting Login as Adminstrator...");
+            System.out.println("Attempting login as adminstrator...");
             L = new LoginHandler("admin", "NA", args[2],C);
             AdminInterfaceHandler A = new AdminInterfaceHandler(C);
             break;
          case "register":
-            System.out.println("Starting Registration Process...");
+            System.out.println("Starting registration process...");
             RegistrationHandler R = new RegistrationHandler(args[1], args[2],C);
-            System.out.println("Registration Complete! You can now sign in.");            
+            System.out.println("Registration complete! You are eligible to sign in as this user. Exiting.");
+            break;
          default:
             try{ wrongLoginMode(); }
             catch( LoginModeException lme ){
-               System.out.println("Invalid Login Mode. Please select either user, manager, admin, or register");
+               System.out.println("Invalid login mode. Please select either user, manager, admin, or register.");
             }
             break;
       }
@@ -69,7 +70,7 @@ public class StarsRusMarket
    private static void checkArgLength(int argsLength) throws ArgLengthException
    {
     if(argsLength == 3)
-      System.out.println("Checking User Mode...");
+      System.out.println("Checking user mode...");
     else
       throw new ArgLengthException();
    }
