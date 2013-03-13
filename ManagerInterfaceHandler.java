@@ -175,8 +175,8 @@ public class ManagerInterfaceHandler implements transactionHandler
 			{
 				customerIDiter = rs.getInt("taxid");
 
-				todaysDate = getTodaysDate();
-				int startingMonth = newDate.getMonth();
+				Date todaysDate = getTodaysDate();
+				int startingMonth = todaysDate.getMonth();
 				String monthString = null;
 					switch( startingMonth ){
 						case 0:
@@ -219,7 +219,7 @@ public class ManagerInterfaceHandler implements transactionHandler
 
 				//get customer's average balance for this whole month up to today
 				String balancesQuery = "select * from balances where To_Char(bdate,'MON') = " + "'" + monthString + "'"
-					+ " AND taxid = " + taxid;
+					+ " AND taxid = " + customerIDiter;
 
 				double averageBalance = 0;
 				int nDays = 0;
