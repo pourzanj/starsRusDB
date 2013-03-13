@@ -288,13 +288,24 @@ public class AdminInterfaceHandler
 
 		//figure out how many days we need to insert balance history for
 		int daysBetween = 0;
+
+		int startingDay = 0;
+		int startingMonth = newDate.getMonth();
+		int startingYear = newDate.getYear() - 100;
 		//if this is the first new date of the month set past balances for the entire new month
 		if( newDate.getMonth() != lastUpdateDate.getMonth() || newDate.getYear() != lastUpdateDate.getYear() )
+		{
 			daysBetween = newDate.getDate();
+			startingDay = 1;
+		}
 
 		//else set past balances for days in between last update day and today
 		else
+		{
 			daysBetween = newDate.getDate() - lastUpdateDate.getDate();
+			startingDay = lastUpdateDate.getDate() + 1;
+		}
+			
 
 		//set balance history for all customers and for all days
 		String query_allCustomers = "select * from customerProfile";
@@ -307,18 +318,80 @@ public class AdminInterfaceHandler
 			{
 				customerIDiter = rs.getInt("taxid");
 
+				//get customer's balance
+				String balanceQuery = "select * from customerProfile where taxid = " + customerIDiter;
+
+				double currentBalance = 0;
+			    try{
+					Statement stmt_balance = myC.getConnection().createStatement();
+					ResultSet balanceRS = stmt_balance.executeQuery(balanceQuery);
+					balanceRS.next();
+					currentBalance = balanceRS.getDouble("acctbalance");
+				} catch(Exception e){
+					System.out.println("Error checking account balance when updating past balances. Exiting.");
+					System.exit(0);
+				}
+
 				//insert past balances for all missed days
 				for(int i=0; i<daysBetween; i++)
 				{
+					String monthString = null;
+					switch( startingMonth ){
+						case 0:
+							monthString = "jan";
+							break;
+						case 1:
+							monthString = "feb";
+							break;
+						case 2:
+							monthString = "mar";
+							break;
+						case 3:
+							monthString = "apr";
+							break;
+						case 4:
+							monthString = "may";
+							break;
+						case 5:
+							monthString = "jun";
+							break;
+						case 6:
+							monthString = "jul";
+							break;
+						case 7:
+							monthString = "aug";
+							break;
+						case 8:
+							monthString = "sep";
+							break;
+						case 9:
+							monthString = "oct";
+							break;
+						case 10:
+							monthString = "nov";
+							break;
+						case 11:
+							monthString = "dec";
+							break;
+					}
+
+					String dayString = null;
+					if(startingDay < 9)
+						dayString = "0" + (startingDay+i);
+					else
+						dayString = "" + (startingDay+i);
+
 					String insertPastBalanceStatement = "insert into balances values(" + customerIDiter
-						+ ",";
+						+ ",'" + dayString + "-" + monthString + "-" + startingYear + "'," + currentBalance + ")";
+
 			    	try{
 				    	Statement stmt_insertPastBalances = myC.getConnection().createStatement();
 						int ex = stmt_insertPastBalances.executeUpdate(insertPastBalanceStatement);
 					} catch (Exception e){
-						System.out.println("Error inserting new transaction in database. Exiting.");
+						System.out.println("Error inserting new past balance in database. Exiting.");
 						System.exit(0);
 					}
+
 				}
 			}
 		} catch(Exception e){
